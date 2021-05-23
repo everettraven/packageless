@@ -44,6 +44,36 @@ func PullImage(name string) error {
 	return nil
 }
 
+//ImageExists - Function to check and see if Docker has the image downloaded
+func ImageExists(imageID string) (bool, error) {
+	//Create a client
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+
+	//Check for errors
+	if err != nil {
+		return false, nil
+	}
+
+	//Create a context and get a list of images on the system
+	ctx := context.Background()
+	images, err := cli.ImageList(ctx, types.ImageListOptions{})
+
+	//Check for errors
+	if err != nil {
+		return false, nil
+	}
+
+	//Loop through all the images and check if a match is found
+	for _, image := range images {
+		if strings.Split(image.RepoTags[0], ":")[0] == imageID {
+			return true, nil
+		}
+	}
+
+	//No match found
+	return false, nil
+}
+
 //CreateContainer - Create a Docker Container from a Docker Image. Returns the containerID and any errors
 func CreateContainer(image string) (string, error) {
 	//Create the client
