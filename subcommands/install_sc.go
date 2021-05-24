@@ -35,6 +35,11 @@ func (ic *InstallCommand) Name() string {
 
 //Init - Parses and Populates values of the Install subcommand
 func (ic *InstallCommand) Init(args []string) error {
+
+	if len(args) <= 0 {
+		return errors.New("No package name was found. You must include the name of the package you wish to install.")
+	}
+
 	ic.name = args[0]
 	return nil
 }
@@ -49,7 +54,9 @@ func (ic *InstallCommand) Run() error {
 	packageList := "./package_list.hcl"
 
 	//Parse the package list
-	packages, err := utils.Parse(packageList)
+	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
+
+	packages := parseOut.(utils.PackageHCLUtil)
 
 	//Check for errors
 	if err != nil {
