@@ -21,13 +21,19 @@ func SubCommand(args []string) error {
 
 	cmds := []Runner{
 		NewInstallCommand(),
+		NewUpgradeCommand(),
 	}
 
 	subcommand := os.Args[1]
 
 	for _, cmd := range cmds {
 		if cmd.Name() == subcommand {
-			cmd.Init(os.Args[2:])
+			err := cmd.Init(os.Args[2:])
+
+			if err != nil {
+				return err
+			}
+
 			return cmd.Run()
 		}
 	}

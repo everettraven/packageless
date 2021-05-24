@@ -32,29 +32,65 @@ type PackageHCLUtil struct {
 	Packages []Package `hcl:"package,block"`
 }
 
+//Config object to contain the configuration details
+type Config struct {
+	BaseDir   string `hcl:"base_dir,attr"`
+	StartPort int    `hcl:"start_port,attr"`
+	PortInc   int    `hcl:"port_increment,attr"`
+}
+
 //Parse function to parse the HCL file given in the filepath
-func Parse(filepath string) (PackageHCLUtil, error) {
+func Parse(filepath string, out interface{}) (interface{}, error) {
 	//Create a parser
 	parser := hclparse.NewParser()
 
-	//Create the object to be decoded to
-	var packages PackageHCLUtil
+	switch out.(type) {
+	default:
+		return nil, errors.New("Unexpected type passed into the HCL parse function")
 
-	//Parse the data
-	parseData, parseDiags := parser.ParseHCLFile(filepath)
+	case PackageHCLUtil:
+		//Create the object to be decoded to
+		var packages PackageHCLUtil
 
-	//Check for errors
-	if parseDiags.HasErrors() {
-		return packages, errors.New("ParseDiags: " + parseDiags.Error())
+		//Parse the data
+		parseData, parseDiags := parser.ParseHCLFile(filepath)
+
+		//Check for errors
+		if parseDiags.HasErrors() {
+			return packages, errors.New("ParseDiags: " + parseDiags.Error())
+		}
+
+		//Decode the parsed HCL to the Object
+		decodeDiags := gohcl.DecodeBody(parseData.Body, nil, &packages)
+
+		//Check for errors
+		if decodeDiags.HasErrors() {
+			return packages, errors.New("DecodeDiags: " + decodeDiags.Error())
+		}
+
+		return packages, nil
+
+	case Config:
+		//Create the object to be decoded to
+		var config Config
+
+		//Parse the data
+		parseData, parseDiags := parser.ParseHCLFile(filepath)
+
+		//Check for errors
+		if parseDiags.HasErrors() {
+			return config, errors.New("ParseDiags: " + parseDiags.Error())
+		}
+
+		//Decode the parsed HCL to the Object
+		decodeDiags := gohcl.DecodeBody(parseData.Body, nil, &config)
+
+		//Check for errors
+		if decodeDiags.HasErrors() {
+			return config, errors.New("DecodeDiags: " + decodeDiags.Error())
+		}
+
+		return config, nil
 	}
 
-	//Decode the parsed HCL to the Object
-	decodeDiags := gohcl.DecodeBody(parseData.Body, nil, &packages)
-
-	//Check for errors
-	if decodeDiags.HasErrors() {
-		return packages, errors.New("DecodeDiags: " + decodeDiags.Error())
-	}
-
-	return packages, nil
 }
