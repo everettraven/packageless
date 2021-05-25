@@ -25,6 +25,7 @@ type Package struct {
 	Image   string   `hcl:"image,attr"`
 	Volumes []Volume `hcl:"volume,block"`
 	Copies  []*Copy  `hcl:"copy,block"`
+	Port    string   `hcl:"port,optional"`
 }
 
 //PackageHCLUtil object to contain a list of packages and all their attributes after the parsing of the package list
