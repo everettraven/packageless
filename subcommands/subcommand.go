@@ -22,6 +22,7 @@ func SubCommand(args []string) error {
 	cmds := []Runner{
 		NewInstallCommand(),
 		NewUpgradeCommand(),
+		NewRunCommand(),
 	}
 
 	subcommand := os.Args[1]

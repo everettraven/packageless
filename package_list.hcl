@@ -13,4 +13,6 @@ package "python" {
         source="/usr/local/lib/python3.9/site-packages/"
         dest="./python/packages/"
     }
+
+    port="3000"
 }

@@ -5,7 +5,9 @@ import (
 	"context"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -204,4 +206,76 @@ func RemoveContainer(containerID string) error {
 
 	//No Errors
 	return nil
+}
+
+//RunContainer - Runs a container for the specified package
+func RunContainer(image string, ports []string, volumes []string, containerName string, args []string) error {
+	// Build the command to run the docker container
+	var cmdStr string
+	cmdBase := "docker"
+
+	//If it is running on windows run the command through powershell
+	if runtime.GOOS == "windows" {
+		cmdBase = "powershell"
+		cmdStr += "docker "
+	}
+
+	// add the base docker command details
+	cmdStr += "run -it --rm --name " + containerName + " "
+
+	// add the ports to the command
+	for _, port := range ports {
+		cmdStr += "-p " + port + " "
+	}
+
+	// add the volumes to the command
+	for _, vol := range volumes {
+		splitVol := strings.Split(vol, ":")
+		var source string
+		var target string
+
+		if len(splitVol) == 3 {
+			source = strings.Join(splitVol[:2], ":")
+			target = splitVol[2]
+		} else {
+			source = splitVol[0]
+			target = splitVol[1]
+		}
+
+		source, err := filepath.Abs(source)
+
+		if err != nil {
+			return err
+		}
+
+		cmdStr += "-v " + source + ":" + target + " "
+	}
+
+	// add the image name and the arguments
+	cmdStr += image + " "
+
+	//Combine the arguments into one string
+	argStr := strings.Join(args, " ")
+
+	//add the arguments
+	cmdStr += argStr
+
+	//Instantiate the command
+	cmd := exec.Command(cmdBase, cmdStr)
+
+	//Connect the command stderr, stdout, and stdin to the OS stderr, stdout, stdin
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+
+	//Run the command
+	err := cmd.Run()
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }

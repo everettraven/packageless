@@ -9,18 +9,18 @@ import (
 	"github.com/everettraven/packageless/utils"
 )
 
-//Install Sub-Command Object
+//Upgrade Sub-Command Object
 type UpgradeCommand struct {
 	//FlagSet so that we can create a custom flag
 	fs *flag.FlagSet
 
-	//String for the name of the package to install
+	//String for the name of the package to upgrade
 	name string
 }
 
-//Instantiation method for a new InstallCommand
+//Instantiation method for a new UpgradeCommand
 func NewUpgradeCommand() *UpgradeCommand {
-	//Create a new InstallCommand and set the FlagSet
+	//Create a new UpgradeCommand and set the FlagSet
 	ic := &UpgradeCommand{
 		fs: flag.NewFlagSet("upgrade", flag.ContinueOnError),
 	}
@@ -33,10 +33,10 @@ func (ic *UpgradeCommand) Name() string {
 	return ic.fs.Name()
 }
 
-//Init - Parses and Populates values of the Install subcommand
+//Init - Parses and Populates values of the Upgrade subcommand
 func (ic *UpgradeCommand) Init(args []string) error {
 	if len(args) <= 0 {
-		fmt.Println("No package specified, upgrading all currently installed packages.")
+		fmt.Println("No package specified, upgrading all currently Upgradeed packages.")
 	} else {
 		ic.name = args[0]
 		fmt.Println("Upgrading", ic.name)
@@ -44,7 +44,7 @@ func (ic *UpgradeCommand) Init(args []string) error {
 	return nil
 }
 
-//Run - Runs the install subcommand
+//Run - Runs the Upgrade subcommand
 func (ic *UpgradeCommand) Run() error {
 	//Create variables to use later
 	var found bool
@@ -79,7 +79,7 @@ func (ic *UpgradeCommand) Run() error {
 			return errors.New("Could not find package " + ic.name + " in the package list")
 		}
 
-		//Check if the corresponding package image is already installed
+		//Check if the corresponding package image is already Upgradeed
 		imgExist, err := utils.ImageExists(pack.Image)
 
 		//Check for errors
@@ -87,9 +87,9 @@ func (ic *UpgradeCommand) Run() error {
 			return err
 		}
 
-		//If the image exists the package is already installed
+		//If the image exists the package is already Upgradeed
 		if !imgExist {
-			return errors.New("Package: " + pack.Name + " is not installed. It must be installed before it can be upgraded.")
+			return errors.New("Package: " + pack.Name + " is not Upgradeed. It must be Upgradeed before it can be upgraded.")
 		}
 
 		fmt.Println("Upgrading", pack.Name)
@@ -169,7 +169,7 @@ func (ic *UpgradeCommand) Run() error {
 	} else {
 		//Loop through the packages in the package list
 		for _, pack := range packages.Packages {
-			//Check if the corresponding package image is already installed
+			//Check if the corresponding package image is already Upgradeed
 			imgExist, err := utils.ImageExists(pack.Image)
 
 			//Check for errors
@@ -177,7 +177,7 @@ func (ic *UpgradeCommand) Run() error {
 				return err
 			}
 
-			//If the image exists the package is already installed
+			//If the image exists the package is already Upgradeed
 			if !imgExist {
 				continue
 			}
