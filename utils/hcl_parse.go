@@ -23,6 +23,7 @@ type Volume struct {
 type Package struct {
 	Name    string   `hcl:"name,label"`
 	Image   string   `hcl:"image,attr"`
+	BaseDir string   `hcl:"base_dir,attr"`
 	Volumes []Volume `hcl:"volume,block"`
 	Copies  []*Copy  `hcl:"copy,block"`
 	Port    string   `hcl:"port,optional"`

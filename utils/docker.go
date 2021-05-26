@@ -53,7 +53,7 @@ func ImageExists(imageID string) (bool, error) {
 
 	//Check for errors
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	//Create a context and get a list of images on the system
@@ -62,7 +62,7 @@ func ImageExists(imageID string) (bool, error) {
 
 	//Check for errors
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	//Loop through all the images and check if a match is found
@@ -278,4 +278,45 @@ func RunContainer(image string, ports []string, volumes []string, containerName 
 
 	return nil
 
+}
+
+//RemoveImage removes the image with the given name from local Docker
+func RemoveImage(image string) error {
+	//Create the client
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
+	//Create the context and search for the image in the list of images
+	ctx := context.Background()
+
+	images, err := cli.ImageList(ctx, types.ImageListOptions{})
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
+	//Create a variable to hold the ID of the image we want to remove
+	var imageID string
+
+	//Loop through all the images and check if a match is found
+	for _, img := range images {
+		if strings.Split(img.RepoTags[0], ":")[0] == image {
+			imageID = img.ID
+		}
+	}
+
+	//Remove the image
+	_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{Force: true})
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
