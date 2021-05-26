@@ -102,20 +102,21 @@ func (ic *InstallCommand) Run() error {
 
 	fmt.Println("Creating package directories")
 
+	//Create the base directory for the package
+	err = MakeDir(pack.BaseDir)
+
+	if err != nil {
+		return err
+	}
+
 	//Check the volumes and create the directories for them if they don't already exist
 	for _, vol := range pack.Volumes {
 		//Make sure that a path is given. If not we already assume that the working directory will be mounted
 		if vol.Path != "" {
-			if _, err := os.Stat(vol.Path); err != nil {
-				if os.IsNotExist(err) {
-					err = os.MkdirAll(vol.Path, 0755)
+			err = MakeDir(vol.Path)
 
-					if err != nil {
-						return err
-					}
-				} else {
-					return err
-				}
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -153,5 +154,21 @@ func (ic *InstallCommand) Run() error {
 
 	fmt.Println(pack.Name, "successfully installed")
 
+	return nil
+}
+
+//MakeDir makes a directory if it doesnt exist given the path
+func MakeDir(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(path, 0755)
+
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
 	return nil
 }

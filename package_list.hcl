@@ -1,5 +1,7 @@
 package "python" {
     image="packageless/python"
+    base_dir="./python/"
+    
     volume {
         path="./python/packages/"
         mount="/usr/local/lib/python3.9/site-packages/"
