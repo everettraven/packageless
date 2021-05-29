@@ -1,10 +1,14 @@
 package subcommands
 
 import (
+	"bufio"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/everettraven/packageless/utils"
 )
@@ -51,8 +55,15 @@ func (uc *UninstallCommand) Run() error {
 	var found bool
 	var pack utils.Package
 
+	//Create a variable for the executable directory
+	ex, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	ed := filepath.Dir(ex)
+
 	//Default location of the package list
-	packageList := "./package_list.hcl"
+	packageList := ed + "/package_list.hcl"
 
 	//Parse the package list
 	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
@@ -106,7 +117,7 @@ func (uc *UninstallCommand) Run() error {
 	for _, vol := range pack.Volumes {
 		//Make sure that a path is given.
 		if vol.Path != "" {
-			err = RemoveDir(vol.Path)
+			err = RemoveDir(ed + vol.Path)
 
 			if err != nil {
 				return err
@@ -115,7 +126,14 @@ func (uc *UninstallCommand) Run() error {
 	}
 
 	//Remove the base directory for the package
-	err = RemoveDir(pack.BaseDir)
+	err = RemoveDir(ed + pack.BaseDir)
+
+	if err != nil {
+		return err
+	}
+
+	//Remove aliases
+	err = RemoveAlias(pack.Name, ed)
 
 	if err != nil {
 		return err
@@ -144,5 +162,187 @@ func RemoveDir(path string) error {
 		err = os.RemoveAll(path)
 	}
 
+	return nil
+}
+
+//Remove Alias will remove the alias for the specified package name from the corresponding files
+func RemoveAlias(name string, ed string) error {
+	//If runtime is on windows remove from macros.doskey and the powershell profile files
+	if runtime.GOOS == "windows" {
+
+		//Command Prompt
+		//------------------------------------------------
+		//Open the doskey file
+		file, err := os.OpenFile(ed+"/macros.doskey", os.O_RDWR, 0755)
+
+		var newOut []string
+
+		if err != nil {
+			return err
+		}
+
+		reader := bufio.NewReader(file)
+
+		//Read the file line by line
+		for {
+			line, err := reader.ReadString('\n')
+
+			//Check for EOF
+			if err != nil && err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				return err
+			}
+
+			dos := name + "=" + ed + "/packageless run " + name + "\n"
+
+			//if the line is the doskey for this package dont include it in the new file
+			if line != dos {
+				newOut = append(newOut, line)
+			}
+		}
+
+		//Close the file
+		file.Close()
+
+		//Recreate the doskey file
+		newFile, err := os.OpenFile(ed+"/macros.doskey", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+
+		if err != nil {
+			return err
+		}
+
+		//Write the contents back to the doskey file
+		for _, line := range newOut {
+			_, err = newFile.WriteString(line)
+
+			if err != nil {
+				return err
+			}
+		}
+
+		//Close the file
+		newFile.Close()
+
+		//------------------------------------------------
+
+		//PowerShell
+		//------------------------------------------------
+
+		pwshPath := os.Getenv("USERPROFILE") + "/Documents/WindowsPowerShell/"
+
+		//Open the powershell profile file
+		file, err = os.OpenFile(pwshPath+"Microsoft.PowerShell_profile.ps1", os.O_RDWR, 0755)
+
+		//Reset the newOut array
+		newOut = nil
+
+		if err != nil {
+			return err
+		}
+
+		reader = bufio.NewReader(file)
+
+		//Read the file line by line
+		for {
+			line, err := reader.ReadString('\n')
+
+			//Check for EOF
+			if err != nil && err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				return err
+			}
+
+			alias := "function " + name + "(){ " + ed + "\\packageless.exe run " + name + " }\n"
+
+			//if the line is the alias for this package dont include it in the new file
+			if line != alias {
+				newOut = append(newOut, line)
+			}
+		}
+
+		//Close the file
+		file.Close()
+
+		//Recreate the powershell profile file
+		newFile, err = os.OpenFile(pwshPath+"Microsoft.PowerShell_profile.ps1", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+
+		if err != nil {
+			return err
+		}
+
+		//Write the contents back to the powershell profile file
+		for _, line := range newOut {
+			_, err = newFile.WriteString(line)
+
+			if err != nil {
+				return err
+			}
+		}
+
+		//Close the file
+		newFile.Close()
+
+	} else {
+		//If it isnt windows, remove it from the bash aliases file
+		file, err := os.OpenFile("~/.bash_aliases", os.O_RDWR, 0755)
+
+		var newOut []string
+
+		if err != nil {
+			return err
+		}
+
+		reader := bufio.NewReader(file)
+
+		//Read the file line by line
+		for {
+			line, err := reader.ReadString('\n')
+
+			//Check for EOF
+			if err != nil && err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				return err
+			}
+
+			alias := "alias " + name + "=" + "\"" + ed + "/packageless run " + name + "\"" + "\n"
+
+			//if the line is the alias for this package dont include it in the new file
+			if line != alias {
+				newOut = append(newOut, line)
+			}
+		}
+
+		//Close the file
+		file.Close()
+
+		//Recreate the bash aliases file
+		newFile, err := os.OpenFile("~/.bash_aliases", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+
+		if err != nil {
+			return err
+		}
+
+		//Write the contents back to the bash aliases file
+		for _, line := range newOut {
+			_, err = newFile.WriteString(line)
+
+			if err != nil {
+				return err
+			}
+		}
+
+		//Close the file
+		newFile.Close()
+
+	}
 	return nil
 }

@@ -5,6 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
+
+	"golang.org/x/sys/windows/registry"
 
 	"github.com/everettraven/packageless/utils"
 )
@@ -50,8 +54,15 @@ func (ic *InstallCommand) Run() error {
 	var found bool
 	var pack utils.Package
 
+	//Create a variable for the executable directory
+	ex, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	ed := filepath.Dir(ex)
+
 	//Default location of the package list
-	packageList := "./package_list.hcl"
+	packageList := ed + "/package_list.hcl"
 
 	//Parse the package list
 	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
@@ -103,7 +114,7 @@ func (ic *InstallCommand) Run() error {
 	fmt.Println("Creating package directories")
 
 	//Create the base directory for the package
-	err = MakeDir(pack.BaseDir)
+	err = MakeDir(ed + pack.BaseDir)
 
 	if err != nil {
 		return err
@@ -113,7 +124,7 @@ func (ic *InstallCommand) Run() error {
 	for _, vol := range pack.Volumes {
 		//Make sure that a path is given. If not we already assume that the working directory will be mounted
 		if vol.Path != "" {
-			err = MakeDir(vol.Path)
+			err = MakeDir(ed + vol.Path)
 
 			if err != nil {
 				return err
@@ -135,7 +146,7 @@ func (ic *InstallCommand) Run() error {
 		fmt.Println("Copying necessary files 2/3")
 		//Copy the files from the container to the locations
 		for _, copy := range pack.Copies {
-			err = utils.CopyFromContainer(copy.Source, copy.Dest, containerID)
+			err = utils.CopyFromContainer(copy.Source, ed+copy.Dest, containerID)
 
 			if err != nil {
 				return err
@@ -150,6 +161,15 @@ func (ic *InstallCommand) Run() error {
 			return err
 		}
 
+	}
+
+	//Set the alias for the command
+	fmt.Println("Setting Alias")
+
+	err = AddAlias(pack.Name, ed)
+
+	if err != nil {
+		return err
 	}
 
 	fmt.Println(pack.Name, "successfully installed")
@@ -170,5 +190,115 @@ func MakeDir(path string) error {
 			return err
 		}
 	}
+	return nil
+}
+
+//OpenFile will open the file at path. If the file does not exist it will create it.
+func OpenFile(path string) (*os.File, error) {
+	var file *os.File
+	//Check if the path exists
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			//Create the file
+			file, err = os.Create(path)
+
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		//Open the file
+		file, err = os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return file, nil
+}
+
+//AddAlias will add the alias for the package name specified
+func AddAlias(name string, ed string) error {
+	//Check what the os is
+	if runtime.GOOS == "windows" {
+		//Set the alias for CMD
+		//------------------------------------------
+		//Open the doskey file
+		file, err := OpenFile(ed + "/macros.doskey")
+
+		//Write the doskey to the doskey file
+		dos := name + "=" + ed + "/packageless run " + name + "\n"
+
+		_, err = file.WriteString(dos)
+
+		if err != nil {
+			return err
+		}
+
+		//Create the registry key
+		k, _, err := registry.CreateKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Command Processor`, registry.SET_VALUE)
+
+		if err != nil {
+			return err
+		}
+
+		//Set the registry key value
+		err = k.SetStringValue("Autorun", "doskey /macrofile="+"\""+ed+"/macros.doskey\"")
+
+		if err != nil {
+			return err
+		}
+
+		file.Close()
+		//--------------------------------
+
+		//Set the alias for Powershell
+		//--------------------------------
+		pwshPath := os.Getenv("USERPROFILE") + "/Documents/WindowsPowerShell/"
+
+		//Create the powershell directory if it doesnt exist
+		err = MakeDir(pwshPath)
+
+		if err != nil {
+			return err
+		}
+
+		//Open the powershell alias file
+		file, err = OpenFile(pwshPath + "Microsoft.PowerShell_profile.ps1")
+
+		if err != nil {
+			return err
+		}
+
+		alias := "function " + name + "(){ " + ed + "\\packageless.exe run " + name + " }\n"
+
+		_, err = file.WriteString(alias)
+
+		if err != nil {
+			return err
+		}
+
+		file.Close()
+
+	} else {
+		//If run on linux lets modify the bash aliases file to include the new aliases
+		file, err := os.OpenFile("~/.bash_aliases", os.O_CREATE|os.O_APPEND, 0755)
+
+		if err != nil {
+			return err
+		}
+
+		//Create the alias and write it to the file
+		alias := "alias " + name + "=" + "\"" + ed + "/packageless run " + name + "\"" + "\n"
+
+		_, err = file.WriteString(alias)
+
+		if err != nil {
+			return err
+		}
+
+		file.Close()
+	}
+
 	return nil
 }

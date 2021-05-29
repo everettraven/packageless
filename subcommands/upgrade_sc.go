@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/everettraven/packageless/utils"
 )
@@ -50,8 +51,15 @@ func (ic *UpgradeCommand) Run() error {
 	var found bool
 	var pack utils.Package
 
+	//Create a variable for the executable directory
+	ex, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	ed := filepath.Dir(ex)
+
 	//Default location of the package list
-	packageList := "./package_list.hcl"
+	packageList := ed + "/package_list.hcl"
 
 	//Parse the package list
 	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
@@ -106,9 +114,9 @@ func (ic *UpgradeCommand) Run() error {
 		for _, vol := range pack.Volumes {
 			//Make sure that a path is given. If not we already assume that the working directory will be mounted
 			if vol.Path != "" {
-				if _, err := os.Stat(vol.Path); err != nil {
+				if _, err := os.Stat(ed + vol.Path); err != nil {
 					if os.IsNotExist(err) {
-						err = os.MkdirAll(vol.Path, 0755)
+						err = os.MkdirAll(ed+vol.Path, 0755)
 
 						if err != nil {
 							return err
@@ -118,14 +126,14 @@ func (ic *UpgradeCommand) Run() error {
 					}
 				} else {
 					//Remove the directory if it already exists
-					err = os.RemoveAll(vol.Path)
+					err = os.RemoveAll(ed + vol.Path)
 
 					if err != nil {
 						return err
 					}
 
 					//Recreate the directory
-					err = os.MkdirAll(vol.Path, 0755)
+					err = os.MkdirAll(ed+vol.Path, 0755)
 
 					if err != nil {
 						return err
@@ -148,7 +156,7 @@ func (ic *UpgradeCommand) Run() error {
 			fmt.Println("Copying necessary files 2/3")
 			//Copy the files from the container to the locations
 			for _, copy := range pack.Copies {
-				err = utils.CopyFromContainer(copy.Source, copy.Dest, containerID)
+				err = utils.CopyFromContainer(copy.Source, ed+copy.Dest, containerID)
 
 				if err != nil {
 					return err
@@ -196,9 +204,9 @@ func (ic *UpgradeCommand) Run() error {
 			for _, vol := range pack.Volumes {
 				//Make sure that a path is given. If not we already assume that the working directory will be mounted
 				if vol.Path != "" {
-					if _, err := os.Stat(vol.Path); err != nil {
+					if _, err := os.Stat(ed + vol.Path); err != nil {
 						if os.IsNotExist(err) {
-							err = os.MkdirAll(vol.Path, 0755)
+							err = os.MkdirAll(ed+vol.Path, 0755)
 
 							if err != nil {
 								return err
@@ -208,14 +216,14 @@ func (ic *UpgradeCommand) Run() error {
 						}
 					} else {
 						//Remove the directory if it already exists
-						err = os.RemoveAll(vol.Path)
+						err = os.RemoveAll(ed + vol.Path)
 
 						if err != nil {
 							return err
 						}
 
 						//Recreate the directory
-						err = os.MkdirAll(vol.Path, 0755)
+						err = os.MkdirAll(ed+vol.Path, 0755)
 
 						if err != nil {
 							return err
@@ -238,7 +246,7 @@ func (ic *UpgradeCommand) Run() error {
 				fmt.Println("Copying necessary files 2/3")
 				//Copy the files from the container to the locations
 				for _, copy := range pack.Copies {
-					err = utils.CopyFromContainer(copy.Source, copy.Dest, containerID)
+					err = utils.CopyFromContainer(copy.Source, ed+copy.Dest, containerID)
 
 					if err != nil {
 						return err
