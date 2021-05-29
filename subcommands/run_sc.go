@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/everettraven/packageless/utils"
@@ -59,11 +60,18 @@ func (rc *RunCommand) Run() error {
 	var found bool
 	var pack utils.Package
 
+	//Create a variable for the executable directory
+	ex, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	ed := filepath.Dir(ex)
+
 	//Default location of the package list
-	packageList := "./package_list.hcl"
+	packageList := ed + "/package_list.hcl"
 
 	//Config file location
-	configLoc := "./config.hcl"
+	configLoc := ed + "/config.hcl"
 
 	//Parse the package list
 	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
@@ -121,7 +129,7 @@ func (rc *RunCommand) Run() error {
 
 	for _, vol := range pack.Volumes {
 		if vol.Path != "" {
-			volumes = append(volumes, vol.Path+":"+vol.Mount)
+			volumes = append(volumes, ed+vol.Path+":"+vol.Mount)
 		} else {
 			sourcePath, err := os.Getwd()
 

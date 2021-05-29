@@ -1,9 +1,9 @@
 package "python" {
     image="packageless/python"
-    base_dir="./python/"
+    base_dir="/python/"
     
     volume {
-        path="./python/packages/"
+        path="/python/packages/"
         mount="/usr/local/lib/python3.9/site-packages/"
     }
 
@@ -13,7 +13,7 @@ package "python" {
 
     copy {
         source="/usr/local/lib/python3.9/site-packages/"
-        dest="./python/packages/"
+        dest="/python/packages/"
     }
 
     port="3000"
