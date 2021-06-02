@@ -87,7 +87,7 @@ func RemoveAliasUnix(name string, ed string) error {
 	file.Close()
 
 	//Recreate the bash aliases file
-	newFile, err := os.OpenFile("~/.bash_aliases", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	newFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 
 	if err != nil {
 		return err
