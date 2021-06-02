@@ -4,18 +4,19 @@ import (
 	"bufio"
 	"io"
 	"os"
-	"path/filepath"
 )
 
 //AddAlias will add the alias for the package name specified
 func AddAliasUnix(name string, ed string) error {
 
 	//get the bash aliases file path
-	path, err := filepath.Abs("~/.bash_aliases")
+	home, err := os.UserHomeDir()
 
 	if err != nil {
 		return nil
 	}
+
+	path := home + "/.bash_aliases"
 
 	//If run on linux lets modify the bash aliases file to include the new aliases
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE, 0755)
@@ -42,11 +43,13 @@ func AddAliasUnix(name string, ed string) error {
 func RemoveAliasUnix(name string, ed string) error {
 
 	//get the bash aliases file path
-	path, err := filepath.Abs("~/.bash_aliases")
+	home, err := os.UserHomeDir()
 
 	if err != nil {
 		return nil
 	}
+
+	path := home + "/.bash_aliases"
 
 	//If it isnt windows, remove it from the bash aliases file
 	file, err := os.OpenFile(path, os.O_RDWR, 0755)
