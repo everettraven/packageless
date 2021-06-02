@@ -256,10 +256,6 @@ func RunContainer(image string, ports []string, volumes []string, containerName 
 	//add the arguments
 	cmdStr += argStr
 
-	if runtime.GOOS != "windows" {
-		cmdStr += "\""
-	}
-
 	//Instantiate the command based on OS
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("powershell", cmdStr)
