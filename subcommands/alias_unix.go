@@ -9,7 +9,7 @@ import (
 //AddAlias will add the alias for the package name specified
 func AddAliasUnix(name string, ed string) error {
 	//If run on linux lets modify the bash aliases file to include the new aliases
-	file, err := os.OpenFile("~/.bash_aliases", os.O_CREATE|os.O_APPEND, 0755)
+	file, err := os.OpenFile("~/.bash_aliases", os.O_APPEND|os.O_CREATE, 0755)
 
 	if err != nil {
 		return err

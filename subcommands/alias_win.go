@@ -43,7 +43,6 @@ func AddAliasWin(name string, ed string) error {
 func RemoveAliasWin(name string, ed string) error {
 	//PowerShell
 	//------------------------------------------------
-
 	pwshPath := os.Getenv("USERPROFILE") + "/Documents/WindowsPowerShell/"
 
 	//Open the powershell profile file
@@ -71,7 +70,7 @@ func RemoveAliasWin(name string, ed string) error {
 			return err
 		}
 
-		alias := "function " + name + "(){ " + ed + "\\packageless.exe run " + name + " }\n"
+		alias := "function " + name + "(){ " + ed + "\\packageless.exe run " + name + " $args }\n"
 
 		//if the line is the alias for this package dont include it in the new file
 		if line != alias {
