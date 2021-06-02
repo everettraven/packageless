@@ -19,7 +19,7 @@ func AddAliasUnix(name string, ed string) error {
 	path := home + "/.bash_aliases"
 
 	//If run on linux lets modify the bash aliases file to include the new aliases
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE, 0755)
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 
 	if err != nil {
 		return err
