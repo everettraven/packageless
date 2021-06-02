@@ -1,4 +1,3 @@
-// +build linux
 package subcommands
 
 import (
