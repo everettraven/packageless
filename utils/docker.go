@@ -212,15 +212,7 @@ func RemoveContainer(containerID string) error {
 func RunContainer(image string, ports []string, volumes []string, containerName string, args []string) error {
 	// Build the command to run the docker container
 	var cmdStr string
-	cmdBase := ""
-
-	//If it is running on windows run the command through powershell
-	if runtime.GOOS == "windows" {
-		cmdBase = "powershell"
-	} else {
-		cmdBase = "bash"
-		cmdStr += "-c \""
-	}
+	var cmd *exec.Cmd
 
 	cmdStr += "docker "
 
@@ -268,8 +260,12 @@ func RunContainer(image string, ports []string, volumes []string, containerName 
 		cmdStr += "\""
 	}
 
-	//Instantiate the command
-	cmd := exec.Command(cmdBase, cmdStr)
+	//Instantiate the command based on OS
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("powershell", cmdStr)
+	} else {
+		cmd = exec.Command("bash", "-c", cmdStr)
+	}
 
 	//Connect the command stderr, stdout, and stdin to the OS stderr, stdout, stdin
 	cmd.Stderr = os.Stderr
