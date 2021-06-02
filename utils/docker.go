@@ -217,11 +217,9 @@ func RunContainer(image string, ports []string, volumes []string, containerName 
 	//If it is running on windows run the command through powershell
 	if runtime.GOOS == "windows" {
 		cmdBase = "powershell"
-		cmdStr += "docker "
-	} else {
-		cmdBase = "bash"
-		cmdStr += "-c docker "
 	}
+
+	cmdStr += "docker "
 
 	// add the base docker command details
 	cmdStr += "run -it --rm --name " + containerName + " "
