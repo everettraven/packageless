@@ -217,6 +217,9 @@ func RunContainer(image string, ports []string, volumes []string, containerName 
 	//If it is running on windows run the command through powershell
 	if runtime.GOOS == "windows" {
 		cmdBase = "powershell"
+	} else {
+		cmdBase = "bash"
+		cmdStr += "-c \""
 	}
 
 	cmdStr += "docker "
@@ -260,6 +263,10 @@ func RunContainer(image string, ports []string, volumes []string, containerName 
 
 	//add the arguments
 	cmdStr += argStr
+
+	if runtime.GOOS != "windows" {
+		cmdStr += "\""
+	}
 
 	//Instantiate the command
 	cmd := exec.Command(cmdBase, cmdStr)
