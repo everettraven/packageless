@@ -183,7 +183,7 @@ func (ic *InstallCommand) Run() error {
 func MakeDir(path string) error {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
-			err = os.MkdirAll(path, 0755)
+			err = os.MkdirAll(path, 0765)
 
 			if err != nil {
 				return err

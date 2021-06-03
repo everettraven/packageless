@@ -40,7 +40,6 @@ func (ic *UpgradeCommand) Init(args []string) error {
 		fmt.Println("No package specified, upgrading all currently Upgradeed packages.")
 	} else {
 		ic.name = args[0]
-		fmt.Println("Upgrading", ic.name)
 	}
 	return nil
 }
@@ -97,7 +96,7 @@ func (ic *UpgradeCommand) Run() error {
 
 		//If the image exists the package is already Upgradeed
 		if !imgExist {
-			return errors.New("Package: " + pack.Name + " is not Upgradeed. It must be Upgradeed before it can be upgraded.")
+			return errors.New("Package: " + pack.Name + " is not installed. It must be installed before it can be upgraded.")
 		}
 
 		fmt.Println("Upgrading", pack.Name)
@@ -116,7 +115,7 @@ func (ic *UpgradeCommand) Run() error {
 			if vol.Path != "" {
 				if _, err := os.Stat(ed + vol.Path); err != nil {
 					if os.IsNotExist(err) {
-						err = os.MkdirAll(ed+vol.Path, 0755)
+						err = os.MkdirAll(ed+vol.Path, 0765)
 
 						if err != nil {
 							return err
@@ -133,7 +132,7 @@ func (ic *UpgradeCommand) Run() error {
 					}
 
 					//Recreate the directory
-					err = os.MkdirAll(ed+vol.Path, 0755)
+					err = os.MkdirAll(ed+vol.Path, 0765)
 
 					if err != nil {
 						return err
@@ -177,7 +176,7 @@ func (ic *UpgradeCommand) Run() error {
 	} else {
 		//Loop through the packages in the package list
 		for _, pack := range packages.Packages {
-			//Check if the corresponding package image is already Upgradeed
+			//Check if the corresponding package image is already installed
 			imgExist, err := utils.ImageExists(pack.Image)
 
 			//Check for errors
@@ -185,7 +184,7 @@ func (ic *UpgradeCommand) Run() error {
 				return err
 			}
 
-			//If the image exists the package is already Upgradeed
+			//If the image exists the package is already installed
 			if !imgExist {
 				continue
 			}
