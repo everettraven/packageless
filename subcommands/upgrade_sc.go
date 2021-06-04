@@ -37,7 +37,7 @@ func (ic *UpgradeCommand) Name() string {
 //Init - Parses and Populates values of the Upgrade subcommand
 func (ic *UpgradeCommand) Init(args []string) error {
 	if len(args) <= 0 {
-		fmt.Println("No package specified, upgrading all currently Upgradeed packages.")
+		fmt.Println("No package specified, upgrading all currently installed packages.")
 	} else {
 		ic.name = args[0]
 	}
@@ -86,7 +86,7 @@ func (ic *UpgradeCommand) Run() error {
 			return errors.New("Could not find package " + ic.name + " in the package list")
 		}
 
-		//Check if the corresponding package image is already Upgradeed
+		//Check if the corresponding package image is already installed
 		imgExist, err := utils.ImageExists(pack.Image)
 
 		//Check for errors
@@ -94,7 +94,7 @@ func (ic *UpgradeCommand) Run() error {
 			return err
 		}
 
-		//If the image exists the package is already Upgradeed
+		//If the image exists the package is already installed
 		if !imgExist {
 			return errors.New("Package: " + pack.Name + " is not installed. It must be installed before it can be upgraded.")
 		}
@@ -205,7 +205,7 @@ func (ic *UpgradeCommand) Run() error {
 				if vol.Path != "" {
 					if _, err := os.Stat(ed + vol.Path); err != nil {
 						if os.IsNotExist(err) {
-							err = os.MkdirAll(ed+vol.Path, 0755)
+							err = os.MkdirAll(ed+vol.Path, 0765)
 
 							if err != nil {
 								return err
@@ -222,7 +222,7 @@ func (ic *UpgradeCommand) Run() error {
 						}
 
 						//Recreate the directory
-						err = os.MkdirAll(ed+vol.Path, 0755)
+						err = os.MkdirAll(ed+vol.Path, 0765)
 
 						if err != nil {
 							return err

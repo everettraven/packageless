@@ -153,7 +153,7 @@ func CopyFromContainer(source string, dest string, containerID string) error {
 			if _, err = os.Stat(path); err != nil {
 				if os.IsNotExist(err) {
 					//Make the directory
-					err = os.MkdirAll(path, info.Mode())
+					err = os.MkdirAll(path, 0765)
 				} else {
 					return err
 				}
@@ -161,7 +161,7 @@ func CopyFromContainer(source string, dest string, containerID string) error {
 
 		} else {
 			//Create the file and open it in the destination path on the host
-			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
+			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0765)
 
 			//Check for errors
 			if err != nil {
