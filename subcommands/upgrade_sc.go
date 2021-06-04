@@ -205,7 +205,7 @@ func (ic *UpgradeCommand) Run() error {
 				if vol.Path != "" {
 					if _, err := os.Stat(ed + vol.Path); err != nil {
 						if os.IsNotExist(err) {
-							err = os.MkdirAll(ed+vol.Path, 0755)
+							err = os.MkdirAll(ed+vol.Path, 0765)
 
 							if err != nil {
 								return err
@@ -222,7 +222,7 @@ func (ic *UpgradeCommand) Run() error {
 						}
 
 						//Recreate the directory
-						err = os.MkdirAll(ed+vol.Path, 0755)
+						err = os.MkdirAll(ed+vol.Path, 0765)
 
 						if err != nil {
 							return err
