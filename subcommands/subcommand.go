@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/everettraven/packageless/utils"
 )
 
 //Runner - Interface to enable easy interactions with the different subcommand objects
@@ -19,11 +21,13 @@ func SubCommand(args []string) error {
 		return errors.New("A subcommand must be passed")
 	}
 
+	tool := utils.NewUtility()
+
 	cmds := []Runner{
-		NewInstallCommand(),
-		NewUpgradeCommand(),
-		NewRunCommand(),
-		NewUninstallCommand(),
+		NewInstallCommand(tool),
+		NewUpgradeCommand(tool),
+		NewRunCommand(tool),
+		NewUninstallCommand(tool),
 	}
 
 	subcommand := os.Args[1]

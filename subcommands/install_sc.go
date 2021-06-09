@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
 )
 
@@ -18,13 +19,17 @@ type InstallCommand struct {
 
 	//String for the name of the package to install
 	name string
+
+	//Tools that can be used by the command
+	tools utils.Tools
 }
 
 //Instantiation method for a new InstallCommand
-func NewInstallCommand() *InstallCommand {
+func NewInstallCommand(tools utils.Tools) *InstallCommand {
 	//Create a new InstallCommand and set the FlagSet
 	ic := &InstallCommand{
-		fs: flag.NewFlagSet("install", flag.ContinueOnError),
+		fs:    flag.NewFlagSet("install", flag.ContinueOnError),
+		tools: tools,
 	}
 
 	return ic
@@ -52,6 +57,12 @@ func (ic *InstallCommand) Run() error {
 	var found bool
 	var pack utils.Package
 
+	//Create the Docker client
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
 	//Create a variable for the executable directory
 	ex, err := os.Executable()
 	if err != nil {
@@ -62,8 +73,14 @@ func (ic *InstallCommand) Run() error {
 	//Default location of the package list
 	packageList := ed + "/package_list.hcl"
 
+	packageListBody, err := ic.tools.GetHCLBody(packageList)
+
+	if err != nil {
+		return err
+	}
+
 	//Parse the package list
-	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
+	parseOut, err := ic.tools.ParseBody(packageListBody, utils.PackageHCLUtil{})
 
 	packages := parseOut.(utils.PackageHCLUtil)
 
@@ -88,7 +105,7 @@ func (ic *InstallCommand) Run() error {
 	}
 
 	//Check if the corresponding package image is already installed
-	imgExist, err := utils.ImageExists(pack.Image)
+	imgExist, err := ic.tools.ImageExists(pack.Image, cli)
 
 	//Check for errors
 	if err != nil {
@@ -97,13 +114,12 @@ func (ic *InstallCommand) Run() error {
 
 	//If the image exists the package is already installed
 	if imgExist {
-		fmt.Println("Package", pack.Name, "is already installed.")
-		return nil
+		return errors.New("Package " + pack.Name + " is already installed")
 	}
 
 	fmt.Println("Installing", pack.Name)
 	//Pull the image down from Docker Hub
-	err = utils.PullImage(pack.Image)
+	err = ic.tools.PullImage(pack.Image, cli)
 
 	if err != nil {
 		return err
@@ -112,7 +128,7 @@ func (ic *InstallCommand) Run() error {
 	fmt.Println("Creating package directories")
 
 	//Create the base directory for the package
-	err = MakeDir(ed + pack.BaseDir)
+	err = ic.tools.MakeDir(ed + pack.BaseDir)
 
 	if err != nil {
 		return err
@@ -122,7 +138,7 @@ func (ic *InstallCommand) Run() error {
 	for _, vol := range pack.Volumes {
 		//Make sure that a path is given. If not we already assume that the working directory will be mounted
 		if vol.Path != "" {
-			err = MakeDir(ed + vol.Path)
+			err = ic.tools.MakeDir(ed + vol.Path)
 
 			if err != nil {
 				return err
@@ -135,7 +151,7 @@ func (ic *InstallCommand) Run() error {
 
 		fmt.Println("Copying necessary files 1/3")
 		//Create the container so that we can copy the files over to the right places
-		containerID, err := utils.CreateContainer(pack.Image)
+		containerID, err := ic.tools.CreateContainer(pack.Image, cli)
 
 		if err != nil {
 			return err
@@ -144,7 +160,7 @@ func (ic *InstallCommand) Run() error {
 		fmt.Println("Copying necessary files 2/3")
 		//Copy the files from the container to the locations
 		for _, copy := range pack.Copies {
-			err = utils.CopyFromContainer(copy.Source, ed+copy.Dest, containerID)
+			err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli)
 
 			if err != nil {
 				return err
@@ -153,7 +169,7 @@ func (ic *InstallCommand) Run() error {
 
 		fmt.Println("Copying necessary files 3/3")
 		//Remove the Container
-		err = utils.RemoveContainer(containerID)
+		err = ic.tools.RemoveContainer(containerID, cli)
 
 		if err != nil {
 			return err
@@ -165,9 +181,9 @@ func (ic *InstallCommand) Run() error {
 	fmt.Println("Setting Alias")
 
 	if runtime.GOOS == "windows" {
-		err = AddAliasWin(pack.Name, ed)
+		err = ic.tools.AddAliasWin(pack.Name, ed)
 	} else {
-		err = AddAliasUnix(pack.Name, ed)
+		err = ic.tools.AddAliasUnix(pack.Name, ed)
 	}
 
 	if err != nil {
@@ -177,44 +193,4 @@ func (ic *InstallCommand) Run() error {
 	fmt.Println(pack.Name, "successfully installed")
 
 	return nil
-}
-
-//MakeDir makes a directory if it doesnt exist given the path
-func MakeDir(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			err = os.MkdirAll(path, 0765)
-
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-	return nil
-}
-
-//OpenFile will open the file at path. If the file does not exist it will create it.
-func OpenFile(path string) (*os.File, error) {
-	var file *os.File
-	//Check if the path exists
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			//Create the file
-			file, err = os.Create(path)
-
-			if err != nil {
-				return nil, err
-			}
-		}
-	} else {
-		//Open the file
-		file, err = os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0755)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return file, nil
 }

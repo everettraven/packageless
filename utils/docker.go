@@ -12,19 +12,10 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
 )
 
 //PullImage - This function pulls a Docker Image from the packageless organization in Docker Hub
-func PullImage(name string) error {
-	//Set up a Docker API client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
+func (u *Utility) PullImage(name string, cli Client) error {
 	//Set the context
 	ctx := context.Background()
 
@@ -47,15 +38,7 @@ func PullImage(name string) error {
 }
 
 //ImageExists - Function to check and see if Docker has the image downloaded
-func ImageExists(imageID string) (bool, error) {
-	//Create a client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-	//Check for errors
-	if err != nil {
-		return false, err
-	}
-
+func (u *Utility) ImageExists(imageID string, cli Client) (bool, error) {
 	//Create a context and get a list of images on the system
 	ctx := context.Background()
 	images, err := cli.ImageList(ctx, types.ImageListOptions{})
@@ -77,15 +60,7 @@ func ImageExists(imageID string) (bool, error) {
 }
 
 //CreateContainer - Create a Docker Container from a Docker Image. Returns the containerID and any errors
-func CreateContainer(image string) (string, error) {
-	//Create the client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-	//Check for errors
-	if err != nil {
-		return "", err
-	}
-
+func (u *Utility) CreateContainer(image string, cli Client) (string, error) {
 	//Create the context and create the container
 	ctx := context.Background()
 	container, err := cli.ContainerCreate(ctx, &container.Config{Image: image, Cmd: []string{"bash"}}, nil, nil, nil, "")
@@ -100,15 +75,7 @@ func CreateContainer(image string) (string, error) {
 }
 
 //CopyFromContainer will copy files from within a Docker Container to the source location on the host
-func CopyFromContainer(source string, dest string, containerID string) error {
-	//Create the Docker client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
+func (u *Utility) CopyFromContainer(source string, dest string, containerID string, cli Client) error {
 	//Set the context and begin copying from the container
 	ctx := context.Background()
 	reader, _, err := cli.CopyFromContainer(ctx, containerID, source)
@@ -121,6 +88,139 @@ func CopyFromContainer(source string, dest string, containerID string) error {
 	//Close the reader after the function ends
 	defer reader.Close()
 
+	//Copy the files over
+	err = u.CopyFiles(reader, dest)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//RemoveContainer is used to remove a container Docker given the container ID
+func (u *Utility) RemoveContainer(containerID string, cli Client) error {
+
+	//Create the context and remove the container
+	ctx := context.Background()
+	err := cli.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{Force: true})
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
+	//No Errors
+	return nil
+}
+
+//RunContainer - Runs a container for the specified package
+func (u *Utility) RunContainer(image string, ports []string, volumes []string, containerName string, args []string) (string, error) {
+	// Build the command to run the docker container
+	var cmdStr string
+	var cmd *exec.Cmd
+
+	cmdStr += "docker "
+
+	// add the base docker command details
+	cmdStr += "run -it --rm --name " + containerName + " "
+
+	// add the ports to the command
+	for _, port := range ports {
+		cmdStr += "-p " + port + " "
+	}
+
+	// add the volumes to the command
+	for _, vol := range volumes {
+		splitVol := strings.Split(vol, ":")
+		var source string
+		var target string
+
+		if len(splitVol) == 3 {
+			source = strings.Join(splitVol[:2], ":")
+			target = splitVol[2]
+		} else {
+			source = splitVol[0]
+			target = splitVol[1]
+		}
+
+		source, err := filepath.Abs(source)
+
+		if err != nil {
+			return "", err
+		}
+
+		cmdStr += "-v " + source + ":" + target + " "
+	}
+
+	// add the image name and the arguments
+	cmdStr += image + " "
+
+	//Combine the arguments into one string
+	argStr := strings.Join(args, " ")
+
+	//add the arguments
+	cmdStr += argStr
+
+	//Instantiate the command based on OS
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("powershell", cmdStr)
+	} else {
+		cmd = exec.Command("bash", "-c", cmdStr)
+	}
+
+	//Connect the command stderr, stdout, and stdin to the OS stderr, stdout, stdin
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+
+	//Run the command
+	err := cmd.Run()
+
+	//Check for errors
+	if err != nil {
+		return "", err
+	}
+
+	return cmdStr, nil
+
+}
+
+//RemoveImage removes the image with the given name from local Docker
+func (u *Utility) RemoveImage(image string, cli Client) error {
+	//Create the context and search for the image in the list of images
+	ctx := context.Background()
+
+	images, err := cli.ImageList(ctx, types.ImageListOptions{})
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
+	//Create a variable to hold the ID of the image we want to remove
+	var imageID string
+
+	//Loop through all the images and check if a match is found
+	for _, img := range images {
+		if strings.Split(img.RepoTags[0], ":")[0] == image {
+			imageID = img.ID
+		}
+	}
+
+	//Remove the image
+	_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{Force: true})
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//CopyFiles implements a tar reader to copy files from the ReadCloser that the docker sdk CopyFromContainer function returns to the specified destination
+func (u *Utility) CopyFiles(reader io.ReadCloser, dest string) error {
 	//Create a tar Reader
 	tarReader := tar.NewReader(reader)
 
@@ -180,142 +280,6 @@ func CopyFromContainer(source string, dest string, containerID string) error {
 			file.Close()
 		}
 
-	}
-
-	return nil
-}
-
-//RemoveContainer is used to remove a container Docker given the container ID
-func RemoveContainer(containerID string) error {
-	//Create the Docker API client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
-	//Create the context and remove the container
-	ctx := context.Background()
-	err = cli.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{Force: true})
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
-	//No Errors
-	return nil
-}
-
-//RunContainer - Runs a container for the specified package
-func RunContainer(image string, ports []string, volumes []string, containerName string, args []string) error {
-	// Build the command to run the docker container
-	var cmdStr string
-	var cmd *exec.Cmd
-
-	cmdStr += "docker "
-
-	// add the base docker command details
-	cmdStr += "run -it --rm --name " + containerName + " "
-
-	// add the ports to the command
-	for _, port := range ports {
-		cmdStr += "-p " + port + " "
-	}
-
-	// add the volumes to the command
-	for _, vol := range volumes {
-		splitVol := strings.Split(vol, ":")
-		var source string
-		var target string
-
-		if len(splitVol) == 3 {
-			source = strings.Join(splitVol[:2], ":")
-			target = splitVol[2]
-		} else {
-			source = splitVol[0]
-			target = splitVol[1]
-		}
-
-		source, err := filepath.Abs(source)
-
-		if err != nil {
-			return err
-		}
-
-		cmdStr += "-v " + source + ":" + target + " "
-	}
-
-	// add the image name and the arguments
-	cmdStr += image + " "
-
-	//Combine the arguments into one string
-	argStr := strings.Join(args, " ")
-
-	//add the arguments
-	cmdStr += argStr
-
-	//Instantiate the command based on OS
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("powershell", cmdStr)
-	} else {
-		cmd = exec.Command("bash", "-c", cmdStr)
-	}
-
-	//Connect the command stderr, stdout, and stdin to the OS stderr, stdout, stdin
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-
-	//Run the command
-	err := cmd.Run()
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-//RemoveImage removes the image with the given name from local Docker
-func RemoveImage(image string) error {
-	//Create the client
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
-	//Create the context and search for the image in the list of images
-	ctx := context.Background()
-
-	images, err := cli.ImageList(ctx, types.ImageListOptions{})
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
-	//Create a variable to hold the ID of the image we want to remove
-	var imageID string
-
-	//Loop through all the images and check if a match is found
-	for _, img := range images {
-		if strings.Split(img.RepoTags[0], ":")[0] == image {
-			imageID = img.ID
-		}
-	}
-
-	//Remove the image
-	_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{Force: true})
-
-	//Check for errors
-	if err != nil {
-		return err
 	}
 
 	return nil
