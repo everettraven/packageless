@@ -3,9 +3,6 @@ package subcommands
 import (
 	"errors"
 	"fmt"
-	"os"
-
-	"github.com/everettraven/packageless/utils"
 )
 
 //Runner - Interface to enable easy interactions with the different subcommand objects
@@ -16,27 +13,16 @@ type Runner interface {
 }
 
 //SubCommand - Helper function that handles setting up and running subcommands
-func SubCommand(args []string) error {
+func SubCommand(args []string, scmds []Runner) error {
 	if len(args) < 1 {
 		return errors.New("A subcommand must be passed")
 	}
 
-	tool := utils.NewUtility()
+	subcommand := args[0]
 
-	cp := &utils.CopyTool{}
-
-	cmds := []Runner{
-		NewInstallCommand(tool, cp),
-		NewUpgradeCommand(tool, cp),
-		NewRunCommand(tool),
-		NewUninstallCommand(tool),
-	}
-
-	subcommand := os.Args[1]
-
-	for _, cmd := range cmds {
+	for _, cmd := range scmds {
 		if cmd.Name() == subcommand {
-			err := cmd.Init(os.Args[2:])
+			err := cmd.Init(args[1:])
 
 			if err != nil {
 				return err
