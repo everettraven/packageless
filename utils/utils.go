@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"archive/tar"
 	"context"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -33,11 +36,10 @@ type Tools interface {
 	PullImage(name string, cli Client) error
 	ImageExists(imageID string, cli Client) (bool, error)
 	CreateContainer(image string, cli Client) (string, error)
-	CopyFromContainer(source string, dest string, containerID string, cli Client) error
+	CopyFromContainer(source string, dest string, containerID string, cli Client, cp Copier) error
 	RemoveContainer(containerID string, cli Client) error
 	RunContainer(image string, ports []string, volumes []string, containerName string, args []string) (string, error)
 	RemoveImage(image string, cli Client) error
-	CopyFiles(reader io.ReadCloser, dest string) error
 	AddAliasWin(name string, ed string) error
 	RemoveAliasWin(name string, ed string) error
 	AddAliasUnix(name string, ed string) error
@@ -134,5 +136,86 @@ func (u *Utility) UpgradeDir(path string) error {
 			return err
 		}
 	}
+	return nil
+}
+
+//Create an interface to house the CopyFiles implementation. This will allow us to make a mock of the CopyFiles Function.
+type Copier interface {
+	CopyFiles(reader io.ReadCloser, dest string) error
+}
+
+//Create the real copy struct
+type CopyTool struct{}
+
+//CopyFiles implements a tar reader to copy files from the ReadCloser that the docker sdk CopyFromContainer function returns to the specified destination
+func (cp *CopyTool) CopyFiles(reader io.ReadCloser, dest string) error {
+
+	//Create a tar Reader
+	tarReader := tar.NewReader(reader)
+
+	//Skip the first header as it is the source folder name
+	header, err := tarReader.Next()
+
+	if err == io.EOF {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	//Loop through the reader and write the files
+	for {
+		//Get the tar header
+		header, err = tarReader.Next()
+		//Make sure we havent reached the end of the tar
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+
+		newHeaderPath := strings.Split(header.Name, "/")[1:]
+		joinPath := strings.Join(newHeaderPath[:], "/")
+
+		//Create the destination file path on the host
+		path := filepath.Join(dest, joinPath)
+		//Get the file info from the header
+		info := header.FileInfo()
+
+		//Check if the current file is a directory
+		if info.IsDir() {
+
+			//Check if the directory exists
+			if _, err = os.Stat(path); err != nil {
+				if os.IsNotExist(err) {
+					//Make the directory
+					err = os.MkdirAll(path, 0765)
+				} else {
+					return err
+				}
+			}
+
+		} else {
+			//Create the file and open it in the destination path on the host
+			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0765)
+
+			//Check for errors
+			if err != nil {
+				return err
+			}
+
+			//Copy the contents of the tar reader to the file
+			_, err = io.Copy(file, tarReader)
+
+			//Check for errors
+			if err != nil {
+				return err
+			}
+
+			//Close the file when all the writing is finished
+			file.Close()
+		}
+
+	}
+
 	return nil
 }

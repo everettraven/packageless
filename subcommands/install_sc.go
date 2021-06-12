@@ -22,14 +22,17 @@ type InstallCommand struct {
 
 	//Tools that can be used by the command
 	tools utils.Tools
+
+	cp utils.Copier
 }
 
 //Instantiation method for a new InstallCommand
-func NewInstallCommand(tools utils.Tools) *InstallCommand {
+func NewInstallCommand(tools utils.Tools, cp utils.Copier) *InstallCommand {
 	//Create a new InstallCommand and set the FlagSet
 	ic := &InstallCommand{
 		fs:    flag.NewFlagSet("install", flag.ContinueOnError),
 		tools: tools,
+		cp:    cp,
 	}
 
 	return ic
@@ -160,7 +163,7 @@ func (ic *InstallCommand) Run() error {
 		fmt.Println("Copying necessary files 2/3")
 		//Copy the files from the container to the locations
 		for _, copy := range pack.Copies {
-			err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli)
+			err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
 
 			if err != nil {
 				return err

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"archive/tar"
 	"context"
 	"io"
 	"os"
@@ -75,7 +74,7 @@ func (u *Utility) CreateContainer(image string, cli Client) (string, error) {
 }
 
 //CopyFromContainer will copy files from within a Docker Container to the source location on the host
-func (u *Utility) CopyFromContainer(source string, dest string, containerID string, cli Client) error {
+func (u *Utility) CopyFromContainer(source string, dest string, containerID string, cli Client, cp Copier) error {
 	//Set the context and begin copying from the container
 	ctx := context.Background()
 	reader, _, err := cli.CopyFromContainer(ctx, containerID, source)
@@ -89,7 +88,7 @@ func (u *Utility) CopyFromContainer(source string, dest string, containerID stri
 	defer reader.Close()
 
 	//Copy the files over
-	err = u.CopyFiles(reader, dest)
+	err = cp.CopyFiles(reader, dest)
 
 	if err != nil {
 		return err
@@ -179,7 +178,7 @@ func (u *Utility) RunContainer(image string, ports []string, volumes []string, c
 
 	//Check for errors
 	if err != nil {
-		return "", err
+		return cmdStr, err
 	}
 
 	return cmdStr, nil
@@ -214,72 +213,6 @@ func (u *Utility) RemoveImage(image string, cli Client) error {
 	//Check for errors
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-//CopyFiles implements a tar reader to copy files from the ReadCloser that the docker sdk CopyFromContainer function returns to the specified destination
-func (u *Utility) CopyFiles(reader io.ReadCloser, dest string) error {
-	//Create a tar Reader
-	tarReader := tar.NewReader(reader)
-
-	//Skip the first header as it is the source folder name
-	tarReader.Next()
-
-	//Loop through the reader and write the files
-	for {
-		//Get the tar header
-		header, err := tarReader.Next()
-		//Make sure we havent reached the end of the tar
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-
-		newHeaderPath := strings.Split(header.Name, "/")[1:]
-		joinPath := strings.Join(newHeaderPath[:], "/")
-
-		//Create the destination file path on the host
-		path := filepath.Join(dest, joinPath)
-		//Get the file info from the header
-		info := header.FileInfo()
-
-		//Check if the current file is a directory
-		if info.IsDir() {
-
-			//Check if the directory exists
-			if _, err = os.Stat(path); err != nil {
-				if os.IsNotExist(err) {
-					//Make the directory
-					err = os.MkdirAll(path, 0765)
-				} else {
-					return err
-				}
-			}
-
-		} else {
-			//Create the file and open it in the destination path on the host
-			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0765)
-
-			//Check for errors
-			if err != nil {
-				return err
-			}
-
-			//Copy the contents of the tar reader to the file
-			_, err = io.Copy(file, tarReader)
-
-			//Check for errors
-			if err != nil {
-				return err
-			}
-
-			//Close the file when all the writing is finished
-			file.Close()
-		}
-
 	}
 
 	return nil

@@ -13,7 +13,9 @@ import (
 func TestUpgradeName(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	if ic.Name() != "upgrade" {
 		t.Fatal("The Upgrade subcommand's name should be: upgrade | Subcommand Name: " + ic.Name())
@@ -24,7 +26,9 @@ func TestUpgradeName(t *testing.T) {
 func TestUpgradeInit(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -54,7 +58,9 @@ func TestUpgradeFlow(t *testing.T) {
 
 	ed := filepath.Dir(ex)
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -158,7 +164,9 @@ func TestUpgradeErrorAtGetHCLBody(t *testing.T) {
 
 	mu.ErrorAt = "GetHCLBody"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -197,7 +205,9 @@ func TestUpgradeErrorAtParseBody(t *testing.T) {
 
 	mu.ErrorAt = "ParseBody"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -237,7 +247,9 @@ func TestUpgradeErrorAtImageExists(t *testing.T) {
 
 	mu.ErrorAt = "ImageExists"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -278,7 +290,9 @@ func TestUpgradeErrorAtPullImage(t *testing.T) {
 
 	mu.ErrorAt = "PullImage"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -320,7 +334,9 @@ func TestUpgradeErrorAtUpgradeDir(t *testing.T) {
 
 	mu.ErrorAt = "UpgradeDir"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -363,7 +379,9 @@ func TestUpgradeErrorAtCreateContainer(t *testing.T) {
 
 	mu.ErrorAt = "CreateContainer"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -407,7 +425,9 @@ func TestUpgradeErrorAtCopyFromContainer(t *testing.T) {
 
 	mu.ErrorAt = "CopyFromContainer"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -452,7 +472,9 @@ func TestUpgradeErrorAtRemoveContainer(t *testing.T) {
 
 	mu.ErrorAt = "RemoveContainer"
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -499,7 +521,9 @@ func TestUpgradeImageNotExists(t *testing.T) {
 	args := []string{"python"}
 	expectedErr := "Package: python is not installed. It must be installed before it can be upgraded."
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	err := ic.Init(args)
 
@@ -557,7 +581,9 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 	ed := filepath.Dir(ex)
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{}
 
@@ -661,7 +687,9 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 func TestUpgradeNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	ic := NewUpgradeCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
 
 	args := []string{"nonexistent"}
 

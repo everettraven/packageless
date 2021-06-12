@@ -13,7 +13,9 @@ import (
 func TestInstallName(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	if ic.Name() != "install" {
 		t.Fatal("The install subcommand's name should be: install | Subcommand Name: " + ic.Name())
@@ -24,7 +26,9 @@ func TestInstallName(t *testing.T) {
 func TestInstallInit(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -52,7 +56,9 @@ func TestInstallFlow(t *testing.T) {
 
 	ed := filepath.Dir(ex)
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -166,7 +172,9 @@ func TestInstallErrorAtGetHCLBody(t *testing.T) {
 
 	mu.ErrorAt = "GetHCLBody"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -203,7 +211,9 @@ func TestInstallErrorAtParseBody(t *testing.T) {
 
 	mu.ErrorAt = "ParseBody"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -241,7 +251,9 @@ func TestInstallErrorAtImageExists(t *testing.T) {
 
 	mu.ErrorAt = "ImageExists"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -280,7 +292,9 @@ func TestInstallErrorAtPullImage(t *testing.T) {
 
 	mu.ErrorAt = "PullImage"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -320,7 +334,9 @@ func TestInstallErrorAtMakeDir(t *testing.T) {
 
 	mu.ErrorAt = "MakeDir"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -361,7 +377,9 @@ func TestInstallErrorAtCreateContainer(t *testing.T) {
 
 	mu.ErrorAt = "CreateContainer"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -404,7 +422,9 @@ func TestInstallErrorAtCopyFromContainer(t *testing.T) {
 
 	mu.ErrorAt = "CopyFromContainer"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -448,7 +468,9 @@ func TestInstallErrorAtRemoveContainer(t *testing.T) {
 
 	mu.ErrorAt = "RemoveContainer"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -493,7 +515,9 @@ func TestInstallErrorAtAddAlias(t *testing.T) {
 
 	mu.ErrorAt = "AddAlias"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -541,7 +565,9 @@ func TestInstallImageExists(t *testing.T) {
 
 	expectedErr := "Package python is already installed"
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"python"}
 
@@ -579,7 +605,9 @@ func TestInstallNoPackage(t *testing.T) {
 
 	expectedErr := "No package name was found. You must include the name of the package you wish to install."
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{}
 
@@ -598,7 +626,9 @@ func TestInstallNoPackage(t *testing.T) {
 func TestInstallNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	ic := NewInstallCommand(mu)
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewInstallCommand(mu, mcp)
 
 	args := []string{"nonexistent"}
 

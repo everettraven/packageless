@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -234,7 +235,7 @@ func (mu *MockUtility) CreateContainer(image string, cli Client) (string, error)
 }
 
 //Mock of the CopyFromContainer Utility function
-func (mu *MockUtility) CopyFromContainer(source string, dest string, containerID string, cli Client) error {
+func (mu *MockUtility) CopyFromContainer(source string, dest string, containerID string, cli Client, cp Copier) error {
 	mu.Calls = append(mu.Calls, "CopyFromContainer")
 	mu.CopySources = append(mu.CopySources, source)
 	mu.CopyDests = append(mu.CopyDests, dest)
@@ -281,17 +282,6 @@ func (mu *MockUtility) RemoveImage(image string, cli Client) error {
 	mu.RemovedImgs = append(mu.RemovedImgs, image)
 
 	if mu.ErrorAt == "RemoveImage" {
-		return errors.New(mu.ErrorMsg)
-	}
-
-	return nil
-}
-
-//Mock of the CopyFiles Utility function
-func (mu *MockUtility) CopyFiles(reader io.ReadCloser, dest string) error {
-	mu.Calls = append(mu.Calls, "CopyFiles")
-
-	if mu.ErrorAt == "CopyFiles" {
 		return errors.New(mu.ErrorMsg)
 	}
 
@@ -348,12 +338,19 @@ func (mu *MockUtility) RemoveAliasUnix(name string, ed string) error {
 
 //Create a Mock for the Docker client
 type DockMock struct {
+	//Variable to know what function to return an error from
+	ErrorAt string
+
+	//Variable to store the error message
+	ErrorMsg string
+
 	//Keep track of the values from ImagePull Function
-	ImgPullRefStr string
+	IPRefStr string
 
 	//Keep track of the values from the ContainerCreate Function
 	CCConfig *container.Config
 	CCName   string
+	CCRet    container.ContainerCreateCreatedBody
 
 	//Keep track of the values from the CopyFromContainer Function
 	CFCID     string
@@ -380,31 +377,59 @@ func NewDockMock() *DockMock {
 
 //Mock function of the Docker SDK ImagePull function
 func (dm *DockMock) ImagePull(ctx context.Context, refStr string, options types.ImagePullOptions) (io.ReadCloser, error) {
-	dm.ImgPullRefStr = refStr
-	return nil, nil
+	if dm.ErrorAt == "ImagePull" {
+		return nil, errors.New(dm.ErrorMsg)
+	}
+
+	dm.IPRefStr = refStr
+
+	//Create the ReadCloser
+	rc := io.NopCloser(bytes.NewReader([]byte("ImagePull")))
+
+	return rc, nil
 }
 
 //Mock function of the Docker SDK ImagePull function
 func (dm *DockMock) ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error) {
+	if dm.ErrorAt == "ImageList" {
+		return nil, errors.New(dm.ErrorMsg)
+	}
+
 	return dm.ILRet, nil
 }
 
 //Mock function of the Docker SDK ContainerCreate function
 func (dm *DockMock) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *specs.Platform, containerName string) (container.ContainerCreateCreatedBody, error) {
+	if dm.ErrorAt == "ContainerCreate" {
+		return container.ContainerCreateCreatedBody{}, errors.New(dm.ErrorMsg)
+	}
+
 	dm.CCConfig = config
 	dm.CCName = containerName
-	return container.ContainerCreateCreatedBody{}, nil
+	return dm.CCRet, nil
 }
 
 //Mock function of the Docker SDK CopyFromContainer function
 func (dm *DockMock) CopyFromContainer(ctx context.Context, containerID string, srcPath string) (io.ReadCloser, types.ContainerPathStat, error) {
+	if dm.ErrorAt == "CopyFromContainer" {
+		return nil, types.ContainerPathStat{}, errors.New(dm.ErrorMsg)
+	}
+
 	dm.CFCID = containerID
 	dm.CFCSource = srcPath
-	return nil, types.ContainerPathStat{}, nil
+
+	//Create the ReadCloser
+	rc := io.NopCloser(bytes.NewReader([]byte("")))
+
+	return rc, types.ContainerPathStat{}, nil
 }
 
 //Mock function of the Docker SDK ContainerRemove function
 func (dm *DockMock) ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error {
+	if dm.ErrorAt == "ContainerRemove" {
+		return errors.New(dm.ErrorMsg)
+	}
+
 	dm.CRContainer = container
 	dm.CROptions = options
 	return nil
@@ -412,7 +437,29 @@ func (dm *DockMock) ContainerRemove(ctx context.Context, container string, optio
 
 //Mock function of the Docker SDK ImageRemove function
 func (dm *DockMock) ImageRemove(ctx context.Context, imageID string, options types.ImageRemoveOptions) ([]types.ImageDeleteResponseItem, error) {
+	if dm.ErrorAt == "ImageRemove" {
+		return nil, errors.New(dm.ErrorMsg)
+	}
+
 	dm.IRImgID = imageID
 	dm.IROptions = options
 	return nil, nil
+}
+
+//CopyTool Mock
+type MockCopyTool struct {
+	Error    bool
+	ErrorMsg string
+	Dest     string
+}
+
+//Mock of the CopyFiles Utility function
+func (mcp *MockCopyTool) CopyFiles(reader io.ReadCloser, dest string) error {
+	if mcp.Error {
+		return errors.New(mcp.ErrorMsg)
+	}
+
+	mcp.Dest = dest
+
+	return nil
 }

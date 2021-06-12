@@ -20,14 +20,17 @@ type UpgradeCommand struct {
 	name string
 
 	tools utils.Tools
+
+	cp utils.Copier
 }
 
 //Instantiation method for a new UpgradeCommand
-func NewUpgradeCommand(tools utils.Tools) *UpgradeCommand {
+func NewUpgradeCommand(tools utils.Tools, cp utils.Copier) *UpgradeCommand {
 	//Create a new UpgradeCommand and set the FlagSet
 	ic := &UpgradeCommand{
 		fs:    flag.NewFlagSet("upgrade", flag.ContinueOnError),
 		tools: tools,
+		cp:    cp,
 	}
 
 	return ic
@@ -151,7 +154,7 @@ func (ic *UpgradeCommand) Run() error {
 			fmt.Println("Copying necessary files 2/3")
 			//Copy the files from the container to the locations
 			for _, copy := range pack.Copies {
-				err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli)
+				err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
 
 				if err != nil {
 					return err
@@ -221,7 +224,7 @@ func (ic *UpgradeCommand) Run() error {
 				fmt.Println("Copying necessary files 2/3")
 				//Copy the files from the container to the locations
 				for _, copy := range pack.Copies {
-					err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli)
+					err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
 
 					if err != nil {
 						return err

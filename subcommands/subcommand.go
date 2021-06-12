@@ -23,9 +23,11 @@ func SubCommand(args []string) error {
 
 	tool := utils.NewUtility()
 
+	cp := &utils.CopyTool{}
+
 	cmds := []Runner{
-		NewInstallCommand(tool),
-		NewUpgradeCommand(tool),
+		NewInstallCommand(tool, cp),
+		NewUpgradeCommand(tool, cp),
 		NewRunCommand(tool),
 		NewUninstallCommand(tool),
 	}
