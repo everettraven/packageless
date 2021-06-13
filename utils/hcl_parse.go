@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/hashicorp/hcl2/gohcl"
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hclparse"
 )
 
@@ -41,10 +42,8 @@ type Config struct {
 	PortInc   int    `hcl:"port_increment,attr"`
 }
 
-//Parse function to parse the HCL file given in the filepath
-func Parse(filepath string, out interface{}) (interface{}, error) {
-	//Create a parser
-	parser := hclparse.NewParser()
+//Parse function to parse the HCL body given
+func (u *Utility) ParseBody(body hcl.Body, out interface{}) (interface{}, error) {
 
 	switch out.(type) {
 	default:
@@ -54,16 +53,8 @@ func Parse(filepath string, out interface{}) (interface{}, error) {
 		//Create the object to be decoded to
 		var packages PackageHCLUtil
 
-		//Parse the data
-		parseData, parseDiags := parser.ParseHCLFile(filepath)
-
-		//Check for errors
-		if parseDiags.HasErrors() {
-			return packages, errors.New("ParseDiags: " + parseDiags.Error())
-		}
-
 		//Decode the parsed HCL to the Object
-		decodeDiags := gohcl.DecodeBody(parseData.Body, nil, &packages)
+		decodeDiags := gohcl.DecodeBody(body, nil, &packages)
 
 		//Check for errors
 		if decodeDiags.HasErrors() {
@@ -76,16 +67,8 @@ func Parse(filepath string, out interface{}) (interface{}, error) {
 		//Create the object to be decoded to
 		var config Config
 
-		//Parse the data
-		parseData, parseDiags := parser.ParseHCLFile(filepath)
-
-		//Check for errors
-		if parseDiags.HasErrors() {
-			return config, errors.New("ParseDiags: " + parseDiags.Error())
-		}
-
 		//Decode the parsed HCL to the Object
-		decodeDiags := gohcl.DecodeBody(parseData.Body, nil, &config)
+		decodeDiags := gohcl.DecodeBody(body, nil, &config)
 
 		//Check for errors
 		if decodeDiags.HasErrors() {
@@ -95,4 +78,18 @@ func Parse(filepath string, out interface{}) (interface{}, error) {
 		return config, nil
 	}
 
+}
+
+//GetHCLBody gets the HCL Body from a given filepath
+func (u *Utility) GetHCLBody(filepath string) (hcl.Body, error) {
+	//create a parser
+	parser := hclparse.NewParser()
+
+	file, diags := parser.ParseHCLFile(filepath)
+
+	if diags.HasErrors() {
+		return nil, errors.New("Parse Error: " + diags.Error())
+	}
+
+	return file.Body, nil
 }

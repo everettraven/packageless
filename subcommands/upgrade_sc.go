@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
 )
 
@@ -17,13 +18,19 @@ type UpgradeCommand struct {
 
 	//String for the name of the package to upgrade
 	name string
+
+	tools utils.Tools
+
+	cp utils.Copier
 }
 
 //Instantiation method for a new UpgradeCommand
-func NewUpgradeCommand() *UpgradeCommand {
+func NewUpgradeCommand(tools utils.Tools, cp utils.Copier) *UpgradeCommand {
 	//Create a new UpgradeCommand and set the FlagSet
 	ic := &UpgradeCommand{
-		fs: flag.NewFlagSet("upgrade", flag.ContinueOnError),
+		fs:    flag.NewFlagSet("upgrade", flag.ContinueOnError),
+		tools: tools,
+		cp:    cp,
 	}
 
 	return ic
@@ -50,6 +57,12 @@ func (ic *UpgradeCommand) Run() error {
 	var found bool
 	var pack utils.Package
 
+	//Create the Docker client
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
 	//Create a variable for the executable directory
 	ex, err := os.Executable()
 	if err != nil {
@@ -60,8 +73,14 @@ func (ic *UpgradeCommand) Run() error {
 	//Default location of the package list
 	packageList := ed + "/package_list.hcl"
 
+	packageListBody, err := ic.tools.GetHCLBody(packageList)
+
+	if err != nil {
+		return err
+	}
+
 	//Parse the package list
-	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
+	parseOut, err := ic.tools.ParseBody(packageListBody, utils.PackageHCLUtil{})
 
 	packages := parseOut.(utils.PackageHCLUtil)
 
@@ -87,7 +106,7 @@ func (ic *UpgradeCommand) Run() error {
 		}
 
 		//Check if the corresponding package image is already installed
-		imgExist, err := utils.ImageExists(pack.Image)
+		imgExist, err := ic.tools.ImageExists(pack.Image, cli)
 
 		//Check for errors
 		if err != nil {
@@ -101,7 +120,7 @@ func (ic *UpgradeCommand) Run() error {
 
 		fmt.Println("Upgrading", pack.Name)
 		//Pull the image down from Docker Hub
-		err = utils.PullImage(pack.Image)
+		err = ic.tools.PullImage(pack.Image, cli)
 
 		if err != nil {
 			return err
@@ -113,30 +132,10 @@ func (ic *UpgradeCommand) Run() error {
 		for _, vol := range pack.Volumes {
 			//Make sure that a path is given. If not we already assume that the working directory will be mounted
 			if vol.Path != "" {
-				if _, err := os.Stat(ed + vol.Path); err != nil {
-					if os.IsNotExist(err) {
-						err = os.MkdirAll(ed+vol.Path, 0765)
+				err = ic.tools.UpgradeDir(ed + vol.Path)
 
-						if err != nil {
-							return err
-						}
-					} else {
-						return err
-					}
-				} else {
-					//Remove the directory if it already exists
-					err = os.RemoveAll(ed + vol.Path)
-
-					if err != nil {
-						return err
-					}
-
-					//Recreate the directory
-					err = os.MkdirAll(ed+vol.Path, 0765)
-
-					if err != nil {
-						return err
-					}
+				if err != nil {
+					return err
 				}
 			}
 		}
@@ -146,7 +145,7 @@ func (ic *UpgradeCommand) Run() error {
 
 			fmt.Println("Copying necessary files 1/3")
 			//Create the container so that we can copy the files over to the right places
-			containerID, err := utils.CreateContainer(pack.Image)
+			containerID, err := ic.tools.CreateContainer(pack.Image, cli)
 
 			if err != nil {
 				return err
@@ -155,7 +154,7 @@ func (ic *UpgradeCommand) Run() error {
 			fmt.Println("Copying necessary files 2/3")
 			//Copy the files from the container to the locations
 			for _, copy := range pack.Copies {
-				err = utils.CopyFromContainer(copy.Source, ed+copy.Dest, containerID)
+				err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
 
 				if err != nil {
 					return err
@@ -164,7 +163,7 @@ func (ic *UpgradeCommand) Run() error {
 
 			fmt.Println("Copying necessary files 3/3")
 			//Remove the Container
-			err = utils.RemoveContainer(containerID)
+			err = ic.tools.RemoveContainer(containerID, cli)
 
 			if err != nil {
 				return err
@@ -177,7 +176,7 @@ func (ic *UpgradeCommand) Run() error {
 		//Loop through the packages in the package list
 		for _, pack := range packages.Packages {
 			//Check if the corresponding package image is already installed
-			imgExist, err := utils.ImageExists(pack.Image)
+			imgExist, err := ic.tools.ImageExists(pack.Image, cli)
 
 			//Check for errors
 			if err != nil {
@@ -191,7 +190,7 @@ func (ic *UpgradeCommand) Run() error {
 
 			fmt.Println("Upgrading", pack.Name)
 			//Pull the image down from Docker Hub
-			err = utils.PullImage(pack.Image)
+			err = ic.tools.PullImage(pack.Image, cli)
 
 			if err != nil {
 				return err
@@ -203,30 +202,10 @@ func (ic *UpgradeCommand) Run() error {
 			for _, vol := range pack.Volumes {
 				//Make sure that a path is given. If not we already assume that the working directory will be mounted
 				if vol.Path != "" {
-					if _, err := os.Stat(ed + vol.Path); err != nil {
-						if os.IsNotExist(err) {
-							err = os.MkdirAll(ed+vol.Path, 0765)
+					err = ic.tools.UpgradeDir(ed + vol.Path)
 
-							if err != nil {
-								return err
-							}
-						} else {
-							return err
-						}
-					} else {
-						//Remove the directory if it already exists
-						err = os.RemoveAll(ed + vol.Path)
-
-						if err != nil {
-							return err
-						}
-
-						//Recreate the directory
-						err = os.MkdirAll(ed+vol.Path, 0765)
-
-						if err != nil {
-							return err
-						}
+					if err != nil {
+						return err
 					}
 				}
 			}
@@ -236,7 +215,7 @@ func (ic *UpgradeCommand) Run() error {
 
 				fmt.Println("Copying necessary files 1/3")
 				//Create the container so that we can copy the files over to the right places
-				containerID, err := utils.CreateContainer(pack.Image)
+				containerID, err := ic.tools.CreateContainer(pack.Image, cli)
 
 				if err != nil {
 					return err
@@ -245,7 +224,7 @@ func (ic *UpgradeCommand) Run() error {
 				fmt.Println("Copying necessary files 2/3")
 				//Copy the files from the container to the locations
 				for _, copy := range pack.Copies {
-					err = utils.CopyFromContainer(copy.Source, ed+copy.Dest, containerID)
+					err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
 
 					if err != nil {
 						return err
@@ -254,7 +233,7 @@ func (ic *UpgradeCommand) Run() error {
 
 				fmt.Println("Copying necessary files 3/3")
 				//Remove the Container
-				err = utils.RemoveContainer(containerID)
+				err = ic.tools.RemoveContainer(containerID, cli)
 
 				if err != nil {
 					return err

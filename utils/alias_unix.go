@@ -1,4 +1,4 @@
-package subcommands
+package utils
 
 import (
 	"bufio"
@@ -7,13 +7,13 @@ import (
 )
 
 //AddAlias will add the alias for the package name specified
-func AddAliasUnix(name string, ed string) error {
+func (u *Utility) AddAliasUnix(name string, ed string) error {
 
 	//get the bash aliases file path
 	home, err := os.UserHomeDir()
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	path := home + "/.bash_aliases"
@@ -40,13 +40,13 @@ func AddAliasUnix(name string, ed string) error {
 }
 
 //Remove Alias will remove the alias for the specified package name from the corresponding files
-func RemoveAliasUnix(name string, ed string) error {
+func (u *Utility) RemoveAliasUnix(name string, ed string) error {
 
 	//get the bash aliases file path
 	home, err := os.UserHomeDir()
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	path := home + "/.bash_aliases"

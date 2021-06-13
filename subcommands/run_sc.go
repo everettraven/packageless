@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
 )
 
@@ -19,13 +20,16 @@ type RunCommand struct {
 	name string
 
 	args []string
+
+	tools utils.Tools
 }
 
 //Instantiation method for a new RunCommand
-func NewRunCommand() *RunCommand {
+func NewRunCommand(tools utils.Tools) *RunCommand {
 	//Create a new RunCommand and set the FlagSet
 	rc := &RunCommand{
-		fs: flag.NewFlagSet("run", flag.ContinueOnError),
+		fs:    flag.NewFlagSet("run", flag.ContinueOnError),
+		tools: tools,
 	}
 
 	return rc
@@ -45,10 +49,6 @@ func (rc *RunCommand) Init(args []string) error {
 
 	rc.name = args[0]
 
-	// if len(args) > 1 {
-	// 	rc.args = args[1:]
-	// }
-
 	rc.args = args[1:]
 
 	return nil
@@ -59,6 +59,12 @@ func (rc *RunCommand) Run() error {
 	//Create variables to use later
 	var found bool
 	var pack utils.Package
+
+	//Create the Docker client
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
 
 	//Create a variable for the executable directory
 	ex, err := os.Executable()
@@ -73,8 +79,20 @@ func (rc *RunCommand) Run() error {
 	//Config file location
 	configLoc := ed + "/config.hcl"
 
+	packageListBody, err := rc.tools.GetHCLBody(packageList)
+
+	if err != nil {
+		return err
+	}
+
+	configBody, err := rc.tools.GetHCLBody(configLoc)
+
+	if err != nil {
+		return err
+	}
+
 	//Parse the package list
-	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
+	parseOut, err := rc.tools.ParseBody(packageListBody, utils.PackageHCLUtil{})
 
 	//Check for errors
 	if err != nil {
@@ -84,7 +102,7 @@ func (rc *RunCommand) Run() error {
 	packages := parseOut.(utils.PackageHCLUtil)
 
 	//Parse the config file
-	parseOut, err = utils.Parse(configLoc, utils.Config{})
+	parseOut, err = rc.tools.ParseBody(configBody, utils.Config{})
 
 	//Check for errors
 	if err != nil {
@@ -108,17 +126,17 @@ func (rc *RunCommand) Run() error {
 		return errors.New("Could not find package " + rc.name + " in the package list")
 	}
 
-	//Check if the corresponding package image is already Runed
-	imgExist, err := utils.ImageExists(pack.Image)
+	//Check if the corresponding package image is already installed
+	imgExist, err := rc.tools.ImageExists(pack.Image, cli)
 
 	//Check for errors
 	if err != nil {
 		return err
 	}
 
-	//If the image exists the package is already Runed
+	//If the image exists the package is already installed
 	if !imgExist {
-		return errors.New("Package " + pack.Name + "is not installed. You must install the package before running it.")
+		return errors.New("Package " + pack.Name + " is not installed. You must install the package before running it.")
 	}
 
 	//Create the variables to use when running the container
@@ -142,7 +160,7 @@ func (rc *RunCommand) Run() error {
 	}
 
 	//Run the container
-	err = utils.RunContainer(pack.Image, ports, volumes, pack.Name, rc.args)
+	_, err = rc.tools.RunContainer(pack.Image, ports, volumes, pack.Name, rc.args)
 
 	if err != nil {
 		return err

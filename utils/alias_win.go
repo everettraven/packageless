@@ -1,4 +1,4 @@
-package subcommands
+package utils
 
 import (
 	"bufio"
@@ -7,20 +7,20 @@ import (
 )
 
 //AddAlias will add the alias for the package name specified
-func AddAliasWin(name string, ed string) error {
+func (u *Utility) AddAliasWin(name string, ed string) error {
 	//Set the alias for Powershell
 	//--------------------------------
 	pwshPath := os.Getenv("USERPROFILE") + "/Documents/WindowsPowerShell/"
 
 	//Create the powershell directory if it doesnt exist
-	err := MakeDir(pwshPath)
+	err := u.MakeDir(pwshPath)
 
 	if err != nil {
 		return err
 	}
 
 	//Open the powershell alias file
-	file, err := OpenFile(pwshPath + "Microsoft.PowerShell_profile.ps1")
+	file, err := u.OpenFile(pwshPath + "Microsoft.PowerShell_profile.ps1")
 
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func AddAliasWin(name string, ed string) error {
 }
 
 //Remove Alias will remove the alias for the specified package name from the corresponding files
-func RemoveAliasWin(name string, ed string) error {
+func (u *Utility) RemoveAliasWin(name string, ed string) error {
 	//PowerShell
 	//------------------------------------------------
 	pwshPath := os.Getenv("USERPROFILE") + "/Documents/WindowsPowerShell/"

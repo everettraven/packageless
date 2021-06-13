@@ -1,0 +1,35 @@
+# GitHub Actions CI/CD to run the packageless tests
+name: build
+
+# Run the action on push to main and pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Enable manual running of the workflow
+  workflow_dispatch:
+
+# Set up the actual workflow jobs
+jobs:
+
+  packageless-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the Repo for testing
+      - uses: actions/checkout@v2
+      # Get Docker setup
+      - uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: "20.10"
+          docker_channel: stable
+      # Set up Go
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.4
+      
+      # Run the go tests
+      - name: Run tests
+        run: go test ./...

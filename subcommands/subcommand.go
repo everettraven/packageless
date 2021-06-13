@@ -3,7 +3,6 @@ package subcommands
 import (
 	"errors"
 	"fmt"
-	"os"
 )
 
 //Runner - Interface to enable easy interactions with the different subcommand objects
@@ -14,23 +13,16 @@ type Runner interface {
 }
 
 //SubCommand - Helper function that handles setting up and running subcommands
-func SubCommand(args []string) error {
+func SubCommand(args []string, scmds []Runner) error {
 	if len(args) < 1 {
 		return errors.New("A subcommand must be passed")
 	}
 
-	cmds := []Runner{
-		NewInstallCommand(),
-		NewUpgradeCommand(),
-		NewRunCommand(),
-		NewUninstallCommand(),
-	}
+	subcommand := args[0]
 
-	subcommand := os.Args[1]
-
-	for _, cmd := range cmds {
+	for _, cmd := range scmds {
 		if cmd.Name() == subcommand {
-			err := cmd.Init(os.Args[2:])
+			err := cmd.Init(args[1:])
 
 			if err != nil {
 				return err

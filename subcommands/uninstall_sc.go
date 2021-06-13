@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
 )
 
@@ -18,13 +19,16 @@ type UninstallCommand struct {
 
 	//String for the name of the package to Uninstall
 	name string
+
+	tools utils.Tools
 }
 
 //Instantiation method for a new UninstallCommand
-func NewUninstallCommand() *UninstallCommand {
+func NewUninstallCommand(tools utils.Tools) *UninstallCommand {
 	//Create a new UninstallCommand and set the FlagSet
 	uc := &UninstallCommand{
-		fs: flag.NewFlagSet("uninstall", flag.ContinueOnError),
+		fs:    flag.NewFlagSet("uninstall", flag.ContinueOnError),
+		tools: tools,
 	}
 
 	return uc
@@ -53,6 +57,12 @@ func (uc *UninstallCommand) Run() error {
 	var found bool
 	var pack utils.Package
 
+	//Create the Docker client
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
 	//Create a variable for the executable directory
 	ex, err := os.Executable()
 	if err != nil {
@@ -63,8 +73,14 @@ func (uc *UninstallCommand) Run() error {
 	//Default location of the package list
 	packageList := ed + "/package_list.hcl"
 
+	packageListBody, err := uc.tools.GetHCLBody(packageList)
+
+	if err != nil {
+		return err
+	}
+
 	//Parse the package list
-	parseOut, err := utils.Parse(packageList, utils.PackageHCLUtil{})
+	parseOut, err := uc.tools.ParseBody(packageListBody, utils.PackageHCLUtil{})
 
 	//Check for errors
 	if err != nil {
@@ -94,7 +110,7 @@ func (uc *UninstallCommand) Run() error {
 	}
 
 	//Check if the corresponding package image is already Uninstalled
-	imgExist, err := utils.ImageExists(pack.Image)
+	imgExist, err := uc.tools.ImageExists(pack.Image, cli)
 
 	//Check for errors
 	if err != nil {
@@ -115,7 +131,7 @@ func (uc *UninstallCommand) Run() error {
 	for _, vol := range pack.Volumes {
 		//Make sure that a path is given.
 		if vol.Path != "" {
-			err = RemoveDir(ed + vol.Path)
+			err = uc.tools.RemoveDir(ed + vol.Path)
 
 			if err != nil {
 				return err
@@ -124,7 +140,7 @@ func (uc *UninstallCommand) Run() error {
 	}
 
 	//Remove the base directory for the package
-	err = RemoveDir(ed + pack.BaseDir)
+	err = uc.tools.RemoveDir(ed + pack.BaseDir)
 
 	if err != nil {
 		return err
@@ -132,9 +148,9 @@ func (uc *UninstallCommand) Run() error {
 
 	//Remove aliases
 	if runtime.GOOS == "windows" {
-		err = RemoveAliasWin(pack.Name, ed)
+		err = uc.tools.RemoveAliasWin(pack.Name, ed)
 	} else {
-		err = RemoveAliasUnix(pack.Name, ed)
+		err = uc.tools.RemoveAliasUnix(pack.Name, ed)
 	}
 
 	if err != nil {
@@ -142,26 +158,11 @@ func (uc *UninstallCommand) Run() error {
 	}
 
 	//Remove the image
-	err = utils.RemoveImage(pack.Image)
+	err = uc.tools.RemoveImage(pack.Image, cli)
 
 	//Check for errors
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-//RemoveDir removes a given directory if it exists
-func RemoveDir(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		} else {
-			return err
-		}
-	} else {
-		err = os.RemoveAll(path)
 	}
 
 	return nil
