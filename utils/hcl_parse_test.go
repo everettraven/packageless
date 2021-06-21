@@ -7,6 +7,9 @@ import (
 	"github.com/hashicorp/hcl2/hclparse"
 )
 
+// Unit Tests For HCL Parsing
+//-----------------------------------------------------------------------------------------
+
 //Test the ParseBody function with a Config Object HCL Body
 func TestParseBodyConfig(t *testing.T) {
 	//Create the HCL byte array
@@ -245,4 +248,165 @@ func TestParseBodyPackageNoCopy(t *testing.T) {
 	if len(pack.Copies) > 0 {
 		t.Fatal("Package # of copies should be '0' | Received: " + strconv.Itoa(len(pack.Copies)))
 	}
+}
+
+// Integration Tests For HCL Parsing
+//-----------------------------------------------------------------------------------------
+
+//Integration test for reading the test Config file
+func TestHCLParse_Integration_Config(t *testing.T) {
+	//Create the util tool
+	util := NewUtility()
+
+	//Read the Test HCL Config file
+	body, err := util.GetHCLBody("../testing/test_config.hcl")
+
+	//Shouldn't throw an error
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Parse the HCL Body into an object
+	parseOut, err := util.ParseBody(body, Config{})
+
+	//Shouldn't throw an error
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Get the parsed object
+	config := parseOut.(Config)
+
+	//Set the expected variables
+	cBD := "./test"
+	cSP := 5000
+	cPI := 100
+
+	//Ensure the base dir is correct
+	if config.BaseDir != cBD {
+		t.Fatalf("HCL Parse Integration: Expected BaseDir: %s | Received: %s", cBD, config.BaseDir)
+	}
+
+	//Ensure the start port is correct
+	if config.StartPort != cSP {
+		t.Fatalf("HCL Parse Integration: Expected StartPort: %d | Received: %d", cSP, config.StartPort)
+	}
+
+	//Ensure the port increment is correct
+	if config.PortInc != cPI {
+		t.Fatalf("HCL Parse Integration: Expected PortInc: %d | Received: %d", cPI, config.PortInc)
+	}
+
+}
+
+//Integration test for reading the test package list file
+func TestHCLParse_Integration_PackageList(t *testing.T) {
+	//Create the util tool
+	util := NewUtility()
+
+	//Read the Test HCL Config file
+	body, err := util.GetHCLBody("../testing/test_package_list.hcl")
+
+	//Shouldn't throw an error
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Parse the HCL Body into an object
+	parseOut, err := util.ParseBody(body, PackageHCLUtil{})
+
+	//Shouldn't throw an error
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Get the parsed object
+	packs := parseOut.(PackageHCLUtil)
+
+	//Set expected variables
+	pLen := 1
+	pName := "test"
+	pImage := "packageless/testing"
+	pBD := "/base"
+	pPort := "3000"
+	vLen := 2
+	v1Path := "/a/path"
+	v1Mount := "/mount/path"
+	v2Path := ""
+	v2Mount := "/run/"
+	cpLen := 1
+	cpSource := "/a/source"
+	cpDest := "/a/dest"
+
+	//Ensure packages length is correct
+	if len(packs.Packages) != pLen {
+		t.Fatalf("Parse HCL Integration: Expected Packages Length: %d | Received: %d", pLen, len(packs.Packages))
+	}
+
+	p := packs.Packages[0]
+
+	//Ensure the package name is correct
+	if p.Name != pName {
+		t.Fatalf("Parse HCL Integration: Expected Package Name: %s | Received: %s", pName, p.Name)
+	}
+
+	//Ensure the package image is correct
+	if p.Image != pImage {
+		t.Fatalf("Parse HCL Integration: Expected Package Image: %s | Received: %s", pImage, p.Image)
+	}
+
+	//Ensure the package base directory is correct
+	if p.BaseDir != pBD {
+		t.Fatalf("ParseHCL Integration: Expected Package BaseDir: %s | Received: %s", pBD, p.BaseDir)
+	}
+
+	//Ensure the package port is correct
+	if p.Port != pPort {
+		t.Fatalf("ParseHCL Integration: Expected Package Port: %s | Received: %s", pPort, p.Port)
+	}
+
+	//Ensure the volumes length matches
+	if len(p.Volumes) != vLen {
+		t.Fatalf("ParseHCL Integration: Expected Package Volumes Len: %d | Received: %d", vLen, len(p.Volumes))
+	}
+
+	vols := p.Volumes
+
+	//Ensure the first volume path matches
+	if vols[0].Path != v1Path {
+		t.Fatalf("ParseHCL Integration: Expected Package Volume 1 Path: %s | Received: %s", v1Path, vols[0].Path)
+	}
+
+	//Ensure the first volume mount path matches
+	if vols[0].Mount != v1Mount {
+		t.Fatalf("ParseHCL Integration: Expected Package Volume 1 Mount: %s | Received: %s", v1Mount, vols[0].Mount)
+	}
+
+	//Ensure the second volume path matches
+	if vols[1].Path != v2Path {
+		t.Fatalf("ParseHCL Integration: Expected Package Volume 2 Path: %s | Received: %s", v2Path, vols[1].Path)
+	}
+
+	//Ensure the second volume mount matches
+	if vols[1].Mount != v2Mount {
+		t.Fatalf("ParseHCL Integration: Expected Package Volume 2 Mount: %s | Received: %s", v2Mount, vols[1].Mount)
+	}
+
+	//Ensure the copies length matches
+	if len(p.Copies) != cpLen {
+		t.Fatalf("ParseHCL Integration: Expected Package Copies Len: %d | Received: %d", cpLen, len(p.Copies))
+	}
+
+	cp := p.Copies[0]
+
+	//Ensure the copy source matches
+	if cp.Source != cpSource {
+		t.Fatalf("ParseHCL Integration: Expected Package Copy Source: %s | Received: %s", cpSource, cp.Source)
+	}
+
+	//Ensure the copy dest matches
+	if cp.Dest != cpDest {
+		t.Fatalf("ParseHCL Integration: Expected Package Copy Dest: %s | Received: %s", cpDest, cp.Dest)
+	}
+
 }

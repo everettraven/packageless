@@ -141,25 +141,34 @@ func (u *Utility) UpgradeDir(path string) error {
 
 //Create an interface to house the CopyFiles implementation. This will allow us to make a mock of the CopyFiles Function.
 type Copier interface {
-	CopyFiles(reader io.ReadCloser, dest string) error
+	CopyFiles(reader io.ReadCloser, dest string, source string) error
 }
 
 //Create the real copy struct
 type CopyTool struct{}
 
 //CopyFiles implements a tar reader to copy files from the ReadCloser that the docker sdk CopyFromContainer function returns to the specified destination
-func (cp *CopyTool) CopyFiles(reader io.ReadCloser, dest string) error {
+func (cp *CopyTool) CopyFiles(reader io.ReadCloser, dest string, source string) error {
 
+	dir := false
+	if source[len(source)-1] == '/' {
+		dir = true
+	}
 	//Create a tar Reader
 	tarReader := tar.NewReader(reader)
 
-	//Skip the first header as it is the source folder name
-	header, err := tarReader.Next()
+	var header *tar.Header
+	var err error
 
-	if err == io.EOF {
-		return nil
-	} else if err != nil {
-		return err
+	if dir {
+		//Skip the first header as it is the source folder name
+		header, err = tarReader.Next()
+
+		if err == io.EOF {
+			return nil
+		} else if err != nil {
+			return err
+		}
 	}
 
 	//Loop through the reader and write the files
@@ -173,7 +182,15 @@ func (cp *CopyTool) CopyFiles(reader io.ReadCloser, dest string) error {
 			return err
 		}
 
-		newHeaderPath := strings.Split(header.Name, "/")[1:]
+		var newHeaderPath []string
+
+		//if the source is a directory split on the forward slash otherwise don't split it
+		if dir {
+			newHeaderPath = strings.Split(header.Name, "/")[1:]
+		} else {
+			newHeaderPath = []string{header.Name}
+		}
+
 		joinPath := strings.Join(newHeaderPath[:], "/")
 
 		//Create the destination file path on the host
@@ -189,8 +206,6 @@ func (cp *CopyTool) CopyFiles(reader io.ReadCloser, dest string) error {
 				if os.IsNotExist(err) {
 					//Make the directory
 					err = os.MkdirAll(path, 0765)
-				} else {
-					return err
 				}
 			}
 

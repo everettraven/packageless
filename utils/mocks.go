@@ -454,7 +454,7 @@ type MockCopyTool struct {
 }
 
 //Mock of the CopyFiles Utility function
-func (mcp *MockCopyTool) CopyFiles(reader io.ReadCloser, dest string) error {
+func (mcp *MockCopyTool) CopyFiles(reader io.ReadCloser, dest string, source string) error {
 	if mcp.Error {
 		return errors.New(mcp.ErrorMsg)
 	}

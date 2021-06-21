@@ -88,7 +88,7 @@ func (u *Utility) CopyFromContainer(source string, dest string, containerID stri
 	defer reader.Close()
 
 	//Copy the files over
-	err = cp.CopyFiles(reader, dest)
+	err = cp.CopyFiles(reader, dest, source)
 
 	if err != nil {
 		return err

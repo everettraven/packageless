@@ -1,7 +1,10 @@
 package main
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
-func TestMain(t *testing.T) {
-	t.Log("MainTest is not yet implemented")
+func TestMain(m *testing.M) {
+	os.Exit(m.Run())
 }
