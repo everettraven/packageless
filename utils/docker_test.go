@@ -607,7 +607,7 @@ func TestDocker_Integration(t *testing.T) {
 	}
 
 	//set the image to pull
-	img := "ubuntu"
+	img := "alpine"
 
 	//pull the image
 	err = util.PullImage(img, cli)
