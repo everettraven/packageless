@@ -1,13 +1,19 @@
 package utils
 
 import (
+	"context"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 )
+
+//Unit Tests
+//------------------------------------------------------------------------
 
 //Test PullImage Function
 func TestPullImage(t *testing.T) {
@@ -576,5 +582,149 @@ func TestRemoveImageError(t *testing.T) {
 		if err.Error() != dm.ErrorMsg {
 			t.Fatal("RemoveContainer: Expected Error: " + dm.ErrorMsg + " | Received Error: " + err.Error())
 		}
+	}
+}
+
+//Integration Tests
+//------------------------------------------------------------------------
+
+//Integration test for the pull image function
+func TestDocker_Integration(t *testing.T) {
+	//if we want to run short tests then skip this
+	if testing.Short() {
+		t.Skip("skipping test, short tests specified")
+	}
+
+	//Create the util object
+	util := NewUtility()
+
+	//Create the Docker CLI
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+
+	//Shouldn't be any errors
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//set the image to pull
+	img := "bpalmer/alpine-base-ssh"
+
+	//pull the image
+	err = util.PullImage(img, cli)
+
+	//shouldn't have any errors
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//make sure the image exists after being pulled
+	imgExist, err := util.ImageExists(img, cli)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !imgExist {
+		t.Fatalf("Docker Integration: Expected Image %s to exist but it did not", img)
+	}
+
+	//Try creating the container
+	cont, err := util.CreateContainer(img, cli)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Make sure the container exists
+	contExist := false
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, c := range containers {
+		if c.ID == cont {
+			contExist = true
+		}
+	}
+
+	if !contExist {
+		t.Fatalf("Docker Integration: Expected Container %s to exist but it did not", cont)
+	}
+
+	//Test getting a file from the container
+	file := "hostname"
+	source := "/etc/" + file
+
+	//get the executing directory
+
+	//set the destination
+	dest, err := filepath.Abs("../testing/")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// runtime.Breakpoint()
+
+	err = util.CopyFromContainer(source, dest, cont, cli, &CopyTool{})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//See if the file exists in the destination directory
+	if _, err = os.Stat(dest + "/" + file); err != nil {
+		if os.IsNotExist(err) {
+			t.Fatalf("Docker Integration: File %s was not copied from the container to host destination %s", file, dest)
+		}
+	}
+
+	//Remove the file now
+	err = os.Remove(dest + "/" + file)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Test removing the container
+	err = util.RemoveContainer(cont, cli)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Make sure the container no longer exists
+
+	contExist = false
+	containers, err = cli.ContainerList(context.Background(), types.ContainerListOptions{All: true})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, c := range containers {
+		if c.ID == cont {
+			contExist = true
+		}
+	}
+
+	if contExist {
+		t.Fatalf("Docker Integration: Expected Container %s to not exist but it does exist", cont)
+	}
+
+	//Now test removing the image
+	err = util.RemoveImage(img, cli)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Check if it exists again
+	imgExist, err = util.ImageExists(img, cli)
+
+	if imgExist {
+		t.Fatalf("Docker: Expected Image %s to not exist but it did", img)
 	}
 }
