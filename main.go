@@ -9,6 +9,10 @@ import (
 )
 
 func main() {
+	os.Exit(wrappedMain())
+}
+
+func wrappedMain() int {
 	//Create the utils for the subcommands
 	util := utils.NewUtility()
 
@@ -26,6 +30,8 @@ func main() {
 	//Run the subcommands
 	if err := subcommands.SubCommand(os.Args[1:], scmds); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
 }
