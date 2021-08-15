@@ -2,23 +2,44 @@ package utils
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 //AddAlias will add the alias for the package name specified
 func (u *Utility) AddAliasUnix(name string, ed string) error {
 
-	//get the bash aliases file path
+	//get the home directory file path
 	home, err := os.UserHomeDir()
 
 	if err != nil {
 		return err
 	}
 
-	path := home + "/.bash_aliases"
+	//Get the shell path
+	shellPath := os.Getenv("SHELL")
 
-	//If run on linux lets modify the bash aliases file to include the new aliases
+	var path string
+
+	shellSplit := strings.Split(shellPath, "/")
+
+	shell := shellSplit[len(shellSplit)-1]
+
+	fmt.Println("Shell is " + shell)
+
+	//Get the filepath for the correct shell rc file
+	if shell == "bash" {
+		path = home + "/.bashrc"
+	} else if shell == "zsh" {
+		path = home + "/.zshrc"
+	} else {
+		return errors.New("Shell: " + shell + " is currently unsupported.")
+	}
+
+	//If run on linux lets modify the shell rc file to include the new aliases
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 
 	if err != nil {
@@ -42,16 +63,32 @@ func (u *Utility) AddAliasUnix(name string, ed string) error {
 //Remove Alias will remove the alias for the specified package name from the corresponding files
 func (u *Utility) RemoveAliasUnix(name string, ed string) error {
 
-	//get the bash aliases file path
+	//get the home directory file path
 	home, err := os.UserHomeDir()
 
 	if err != nil {
 		return err
 	}
 
-	path := home + "/.bash_aliases"
+	//Get the shell path
+	shellPath := os.Getenv("SHELL")
 
-	//If it isnt windows, remove it from the bash aliases file
+	var path string
+
+	shellSplit := strings.Split(shellPath, "/")
+
+	shell := shellSplit[len(shellSplit)-1]
+
+	//Get the filepath for the correct shell rc file
+	if shell == "bash" {
+		path = home + "/.bashrc"
+	} else if shell == "zsh" {
+		path = home + "/.zshrc"
+	} else {
+		return errors.New("Shell: " + shell + " is currently unsupported.")
+	}
+
+	//Open the shell rc file
 	file, err := os.OpenFile(path, os.O_RDWR, 0755)
 
 	var newOut []string
@@ -86,14 +123,14 @@ func (u *Utility) RemoveAliasUnix(name string, ed string) error {
 	//Close the file
 	file.Close()
 
-	//Recreate the bash aliases file
+	//Recreate the shell rc file
 	newFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 
 	if err != nil {
 		return err
 	}
 
-	//Write the contents back to the bash aliases file
+	//Write the contents back to the shell rc file
 	for _, line := range newOut {
 		_, err = newFile.WriteString(line)
 
