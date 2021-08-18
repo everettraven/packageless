@@ -2,23 +2,63 @@ package utils
 
 import (
 	"bufio"
+	"bytes"
+	"errors"
+	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 //AddAlias will add the alias for the package name specified
 func (u *Utility) AddAliasUnix(name string, ed string) error {
 
-	//get the bash aliases file path
+	//get the home directory file path
 	home, err := os.UserHomeDir()
 
 	if err != nil {
 		return err
 	}
 
-	path := home + "/.bash_aliases"
+	//Get the shell PID
+	ppid := fmt.Sprint(os.Getppid())
 
-	//If run on linux lets modify the bash aliases file to include the new aliases
+	//Create a list of commands to run and pipe together
+	var cmds []exec.Cmd
+	cmds = append(cmds, *exec.Command("ps", "-ef"))
+	cmds = append(cmds, *exec.Command("awk", "{print $2 \" \" $8}"))
+	cmds = append(cmds, *exec.Command("grep", ppid))
+	cmds = append(cmds, *exec.Command("awk", "{print $2}"))
+
+	var output []byte
+
+	//Loop through the commands and run them
+	for i, _ := range cmds {
+		cmds[i].Stdin = bytes.NewReader(output)
+
+		output, err = cmds[i].Output()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	var path string
+
+	//Trim the output to get rid of any whitespace
+	shell := strings.TrimSpace(string(output[:]))
+
+	//Get the filepath for the correct shell rc file
+	if shell == "bash" || shell == "-bash" {
+		path = home + "/.bashrc"
+	} else if shell == "zsh" || shell == "-zsh" {
+		path = home + "/.zshrc"
+	} else {
+		return errors.New("Shell: " + shell + " is currently unsupported.")
+	}
+
+	//If run on linux lets modify the shell rc file to include the new aliases
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 
 	if err != nil {
@@ -42,16 +82,51 @@ func (u *Utility) AddAliasUnix(name string, ed string) error {
 //Remove Alias will remove the alias for the specified package name from the corresponding files
 func (u *Utility) RemoveAliasUnix(name string, ed string) error {
 
-	//get the bash aliases file path
+	//get the home directory file path
 	home, err := os.UserHomeDir()
 
 	if err != nil {
 		return err
 	}
 
-	path := home + "/.bash_aliases"
+	//Get the shell PID
+	ppid := fmt.Sprint(os.Getppid())
 
-	//If it isnt windows, remove it from the bash aliases file
+	//Create a list of commands to run and pipe them together
+	var cmds []exec.Cmd
+	cmds = append(cmds, *exec.Command("ps", "-ef"))
+	cmds = append(cmds, *exec.Command("awk", "{print $2 \" \" $8}"))
+	cmds = append(cmds, *exec.Command("grep", ppid))
+	cmds = append(cmds, *exec.Command("awk", "{print $2}"))
+
+	var output []byte
+
+	//Loop through the commands and run them
+	for i, _ := range cmds {
+		cmds[i].Stdin = bytes.NewReader(output)
+
+		output, err = cmds[i].Output()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	var path string
+
+	//Trim the output whitespace
+	shell := strings.TrimSpace(string(output[:]))
+
+	//Get the filepath for the correct shell rc file
+	if shell == "bash" || shell == "-bash" {
+		path = home + "/.bashrc"
+	} else if shell == "zsh" || shell == "-zsh" {
+		path = home + "/.zshrc"
+	} else {
+		return errors.New("Shell: " + shell + " is currently unsupported.")
+	}
+
+	//Open the shell rc file
 	file, err := os.OpenFile(path, os.O_RDWR, 0755)
 
 	var newOut []string
@@ -86,14 +161,14 @@ func (u *Utility) RemoveAliasUnix(name string, ed string) error {
 	//Close the file
 	file.Close()
 
-	//Recreate the bash aliases file
+	//Recreate the shell rc file
 	newFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 
 	if err != nil {
 		return err
 	}
 
-	//Write the contents back to the bash aliases file
+	//Write the contents back to the shell rc file
 	for _, line := range newOut {
 		_, err = newFile.WriteString(line)
 

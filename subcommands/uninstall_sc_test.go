@@ -175,8 +175,8 @@ func TestUninstallFlow(t *testing.T) {
 		"ImageExists",
 		"RemoveDir",
 		"RemoveDir",
-		"RemoveAlias",
 		"RemoveImage",
+		"RemoveAlias",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -416,6 +416,7 @@ func TestUninstallErrorAtRemoveAlias(t *testing.T) {
 		"ImageExists",
 		"RemoveDir",
 		"RemoveDir",
+		"RemoveImage",
 		"RemoveAlias",
 	}
 
@@ -459,7 +460,6 @@ func TestUninstallErrorAtRemoveImage(t *testing.T) {
 		"ImageExists",
 		"RemoveDir",
 		"RemoveDir",
-		"RemoveAlias",
 		"RemoveImage",
 	}
 
