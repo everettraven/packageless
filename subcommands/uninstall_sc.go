@@ -146,6 +146,14 @@ func (uc *UninstallCommand) Run() error {
 		return err
 	}
 
+	//Remove the image
+	err = uc.tools.RemoveImage(pack.Image, cli)
+
+	//Check for errors
+	if err != nil {
+		return err
+	}
+
 	//Remove aliases
 	if runtime.GOOS == "windows" {
 		err = uc.tools.RemoveAliasWin(pack.Name, ed)
@@ -153,14 +161,6 @@ func (uc *UninstallCommand) Run() error {
 		err = uc.tools.RemoveAliasUnix(pack.Name, ed)
 	}
 
-	if err != nil {
-		return err
-	}
-
-	//Remove the image
-	err = uc.tools.RemoveImage(pack.Image, cli)
-
-	//Check for errors
 	if err != nil {
 		return err
 	}

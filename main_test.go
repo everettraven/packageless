@@ -5,8 +5,16 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
+
+type TestCase struct {
+	Name        string
+	Args        []string
+	Err         bool
+	ExpectedErr string
+}
 
 func TestMain_OsArgs(t *testing.T) {
 
@@ -14,16 +22,13 @@ func TestMain_OsArgs(t *testing.T) {
 		t.Skip("short testing specified, skipping this test")
 	}
 
-	//Create a list of structs to hold data info for testing cases
-	cases := []struct {
-		Name string
-		Args []string
-		Err  bool
-	}{
+	//Create a list of structs to hold data info for testing cases for windows
+	casesWindows := []TestCase{
 		{
 			"Install Test",
 			[]string{"packageless", "install", "python"},
 			false,
+			"",
 		},
 		{
 			//We know this one will fail because go test doesn't include tty which the docker command we run uses
@@ -31,16 +36,49 @@ func TestMain_OsArgs(t *testing.T) {
 			"Run Test",
 			[]string{"packageless", "run", "python"},
 			true,
+			"",
 		},
 		{
 			"Upgrade Test",
 			[]string{"packageless", "upgrade", "python"},
 			false,
+			"",
 		},
 		{
 			"Uninstall Test",
 			[]string{"packageless", "uninstall", "python"},
 			false,
+			"",
+		},
+	}
+
+	//Create a list of structs to hold data info for testing cases for windows
+	casesUnix := []TestCase{
+		{
+			"Install Test",
+			[]string{"packageless", "install", "python"},
+			true,
+			"Shell: go is currently unsupported.",
+		},
+		{
+			//We know this one will fail because go test doesn't include tty which the docker command we run uses
+			//This test failing lets us know the command is attempting to run properly
+			"Run Test",
+			[]string{"packageless", "run", "python"},
+			true,
+			"",
+		},
+		{
+			"Upgrade Test",
+			[]string{"packageless", "upgrade", "python"},
+			false,
+			"",
+		},
+		{
+			"Uninstall Test",
+			[]string{"packageless", "uninstall", "python"},
+			true,
+			"Shell: go is currently unsupported.",
 		},
 	}
 
@@ -65,6 +103,14 @@ func TestMain_OsArgs(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var cases []TestCase
+
+	if runtime.GOOS == "windows" {
+		cases = casesWindows
+	} else {
+		cases = casesUnix
+	}
+
 	//Loop through the test cases
 	for i, tc := range cases {
 		t.Run(fmt.Sprintf("%d-%s", i, tc.Name), func(t *testing.T) {
@@ -73,11 +119,18 @@ func TestMain_OsArgs(t *testing.T) {
 			os.Args = tc.Args
 
 			//Run the main function
-			exit := wrappedMain()
+			exit, err := wrappedMain()
 
 			if (exit != 0) != tc.Err {
-				t.Fatalf("Fail: %d", exit)
+				t.Fatalf("Fail - Exit code did not match the expected")
+			} else {
+				if tc.ExpectedErr != "" {
+					if err.Error() != tc.ExpectedErr {
+						t.Fatalf("Fail - Expected Error: %s | Received: %s", tc.ExpectedErr, err.Error())
+					}
+				}
 			}
+
 		})
 	}
 

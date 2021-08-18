@@ -2,10 +2,12 @@ package utils
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -19,21 +21,38 @@ func (u *Utility) AddAliasUnix(name string, ed string) error {
 		return err
 	}
 
-	//Get the shell path
-	shellPath := os.Getenv("SHELL")
+	//Get the shell PID
+	ppid := fmt.Sprint(os.Getppid())
+
+	//Create a list of commands to run and pipe together
+	var cmds []exec.Cmd
+	cmds = append(cmds, *exec.Command("ps", "-ef"))
+	cmds = append(cmds, *exec.Command("awk", "{print $2 \" \" $8}"))
+	cmds = append(cmds, *exec.Command("grep", ppid))
+	cmds = append(cmds, *exec.Command("awk", "{print $2}"))
+
+	var output []byte
+
+	//Loop through the commands and run them
+	for i, _ := range cmds {
+		cmds[i].Stdin = bytes.NewReader(output)
+
+		output, err = cmds[i].Output()
+
+		if err != nil {
+			return err
+		}
+	}
 
 	var path string
 
-	shellSplit := strings.Split(shellPath, "/")
-
-	shell := shellSplit[len(shellSplit)-1]
-
-	fmt.Println("Shell is " + shell)
+	//Trim the output to get rid of any whitespace
+	shell := strings.TrimSpace(string(output[:]))
 
 	//Get the filepath for the correct shell rc file
-	if shell == "bash" {
+	if shell == "bash" || shell == "-bash" {
 		path = home + "/.bashrc"
-	} else if shell == "zsh" {
+	} else if shell == "zsh" || shell == "-zsh" {
 		path = home + "/.zshrc"
 	} else {
 		return errors.New("Shell: " + shell + " is currently unsupported.")
@@ -70,19 +89,38 @@ func (u *Utility) RemoveAliasUnix(name string, ed string) error {
 		return err
 	}
 
-	//Get the shell path
-	shellPath := os.Getenv("SHELL")
+	//Get the shell PID
+	ppid := fmt.Sprint(os.Getppid())
+
+	//Create a list of commands to run and pipe them together
+	var cmds []exec.Cmd
+	cmds = append(cmds, *exec.Command("ps", "-ef"))
+	cmds = append(cmds, *exec.Command("awk", "{print $2 \" \" $8}"))
+	cmds = append(cmds, *exec.Command("grep", ppid))
+	cmds = append(cmds, *exec.Command("awk", "{print $2}"))
+
+	var output []byte
+
+	//Loop through the commands and run them
+	for i, _ := range cmds {
+		cmds[i].Stdin = bytes.NewReader(output)
+
+		output, err = cmds[i].Output()
+
+		if err != nil {
+			return err
+		}
+	}
 
 	var path string
 
-	shellSplit := strings.Split(shellPath, "/")
-
-	shell := shellSplit[len(shellSplit)-1]
+	//Trim the output whitespace
+	shell := strings.TrimSpace(string(output[:]))
 
 	//Get the filepath for the correct shell rc file
-	if shell == "bash" {
+	if shell == "bash" || shell == "-bash" {
 		path = home + "/.bashrc"
-	} else if shell == "zsh" {
+	} else if shell == "zsh" || shell == "-zsh" {
 		path = home + "/.zshrc"
 	} else {
 		return errors.New("Shell: " + shell + " is currently unsupported.")
