@@ -21,14 +21,17 @@ type UninstallCommand struct {
 	name string
 
 	tools utils.Tools
+
+	config utils.Config
 }
 
 //Instantiation method for a new UninstallCommand
-func NewUninstallCommand(tools utils.Tools) *UninstallCommand {
+func NewUninstallCommand(tools utils.Tools, config utils.Config) *UninstallCommand {
 	//Create a new UninstallCommand and set the FlagSet
 	uc := &UninstallCommand{
-		fs:    flag.NewFlagSet("uninstall", flag.ContinueOnError),
-		tools: tools,
+		fs:     flag.NewFlagSet("uninstall", flag.ContinueOnError),
+		tools:  tools,
+		config: config,
 	}
 
 	return uc
@@ -146,6 +149,8 @@ func (uc *UninstallCommand) Run() error {
 		return err
 	}
 
+	fmt.Println("Removing Image")
+
 	//Remove the image
 	err = uc.tools.RemoveImage(pack.Image, cli)
 
@@ -154,15 +159,19 @@ func (uc *UninstallCommand) Run() error {
 		return err
 	}
 
-	//Remove aliases
-	if runtime.GOOS == "windows" {
-		err = uc.tools.RemoveAliasWin(pack.Name, ed)
-	} else {
-		err = uc.tools.RemoveAliasUnix(pack.Name, ed)
-	}
+	if uc.config.Alias {
+		//Remove aliases
+		fmt.Println("Removing Alias")
 
-	if err != nil {
-		return err
+		if runtime.GOOS == "windows" {
+			err = uc.tools.RemoveAliasWin(pack.Name, ed)
+		} else {
+			err = uc.tools.RemoveAliasUnix(pack.Name, ed)
+		}
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

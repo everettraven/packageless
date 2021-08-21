@@ -15,7 +15,8 @@ func TestParseBodyConfig(t *testing.T) {
 	//Create the HCL byte array
 	hcl := []byte(`base_dir="./"
 	start_port=3000
-	port_increment=1`)
+	port_increment=1
+	alias=true`)
 
 	//Create the parser
 	parser := hclparse.NewParser()
@@ -53,6 +54,10 @@ func TestParseBodyConfig(t *testing.T) {
 
 	if config.StartPort != 3000 {
 		t.Fatal("Config Start Port should be '3000' | Received: " + strconv.Itoa(config.StartPort))
+	}
+
+	if !config.Alias {
+		t.Fatal("Config attribute 'alias' should be set to true. Instead it was set to false.")
 	}
 }
 
@@ -281,6 +286,7 @@ func TestHCLParse_Integration_Config(t *testing.T) {
 	cBD := "./test"
 	cSP := 5000
 	cPI := 100
+	cA := true
 
 	//Ensure the base dir is correct
 	if config.BaseDir != cBD {
@@ -295,6 +301,10 @@ func TestHCLParse_Integration_Config(t *testing.T) {
 	//Ensure the port increment is correct
 	if config.PortInc != cPI {
 		t.Fatalf("HCL Parse Integration: Expected PortInc: %d | Received: %d", cPI, config.PortInc)
+	}
+
+	if config.Alias != cA {
+		t.Fatalf("HCL Parse Integration: Expected Alias: %s | Received: %s", strconv.FormatBool(cA), strconv.FormatBool(config.Alias))
 	}
 
 }

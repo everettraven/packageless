@@ -14,7 +14,14 @@ import (
 func TestRunName(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	if rc.Name() != "run" {
 		t.Fatal("The run subcommand's name should be: run | Subcommand Name: " + rc.Name())
@@ -25,7 +32,14 @@ func TestRunName(t *testing.T) {
 func TestRunInit(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -46,7 +60,14 @@ func TestRunNoPackage(t *testing.T) {
 
 	expectedErr := "No package name was found. You must include the name of the package you wish to run."
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{}
 
@@ -65,7 +86,14 @@ func TestRunNoPackage(t *testing.T) {
 func TestRunNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"nonexistent"}
 
@@ -90,8 +118,6 @@ func TestRunNonExistPackage(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"GetHCLBody",
-		"GetHCLBody",
-		"ParseBody",
 		"ParseBody",
 	}
 
@@ -106,7 +132,14 @@ func TestRunImageNotExist(t *testing.T) {
 
 	mu.ImgExist = false
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -131,8 +164,6 @@ func TestRunImageNotExist(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"GetHCLBody",
-		"GetHCLBody",
-		"ParseBody",
 		"ParseBody",
 		"ImageExists",
 	}
@@ -157,7 +188,14 @@ func TestRunFlowNoRunArgs(t *testing.T) {
 
 	ed := filepath.Dir(ex)
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -176,8 +214,6 @@ func TestRunFlowNoRunArgs(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"GetHCLBody",
-		"GetHCLBody",
-		"ParseBody",
 		"ParseBody",
 		"ImageExists",
 		"RunContainer",
@@ -227,7 +263,14 @@ func TestRunFlowRunArgs(t *testing.T) {
 
 	ed := filepath.Dir(ex)
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -250,8 +293,6 @@ func TestRunFlowRunArgs(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"GetHCLBody",
-		"GetHCLBody",
-		"ParseBody",
 		"ParseBody",
 		"ImageExists",
 		"RunContainer",
@@ -294,7 +335,14 @@ func TestRunErrorAtGetHCLBody(t *testing.T) {
 
 	mu.ErrorAt = "GetHCLBody"
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -333,7 +381,14 @@ func TestRunErrorAtParseBody(t *testing.T) {
 
 	mu.ErrorAt = "ParseBody"
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -355,7 +410,6 @@ func TestRunErrorAtParseBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
-		"GetHCLBody",
 		"GetHCLBody",
 		"ParseBody",
 	}
@@ -373,7 +427,14 @@ func TestRunErrorAtImageExists(t *testing.T) {
 
 	mu.ErrorAt = "ImageExists"
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -396,8 +457,6 @@ func TestRunErrorAtImageExists(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"GetHCLBody",
-		"GetHCLBody",
-		"ParseBody",
 		"ParseBody",
 		"ImageExists",
 	}
@@ -415,7 +474,14 @@ func TestRunErrorAtRunContainer(t *testing.T) {
 
 	mu.ErrorAt = "RunContainer"
 
-	rc := NewRunCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -438,8 +504,6 @@ func TestRunErrorAtRunContainer(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"GetHCLBody",
-		"GetHCLBody",
-		"ParseBody",
 		"ParseBody",
 		"ImageExists",
 		"RunContainer",

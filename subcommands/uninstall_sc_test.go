@@ -13,7 +13,14 @@ import (
 func TestUninstallName(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	if uc.Name() != "uninstall" {
 		t.Fatal("The uninstall subcommand's name should be: uninstall | Subcommand Name: " + uc.Name())
@@ -24,7 +31,14 @@ func TestUninstallName(t *testing.T) {
 func TestUninstallInit(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -45,7 +59,14 @@ func TestUninstallNoPackage(t *testing.T) {
 
 	expectedErr := "No package name was found. You must include the name of the package you wish to uninstall."
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{}
 
@@ -64,7 +85,14 @@ func TestUninstallNoPackage(t *testing.T) {
 func TestUninstallNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"nonexistent"}
 
@@ -103,7 +131,14 @@ func TestUninstallImageNotExist(t *testing.T) {
 
 	mu.ImgExist = false
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -152,7 +187,14 @@ func TestUninstallFlow(t *testing.T) {
 
 	ed := filepath.Dir(ex)
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -230,7 +272,14 @@ func TestUninstallErrorAtGetHCLBody(t *testing.T) {
 
 	mu.ErrorAt = "GetHCLBody"
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -269,7 +318,14 @@ func TestUninstallErrorAtParseBody(t *testing.T) {
 
 	mu.ErrorAt = "ParseBody"
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     false,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -308,7 +364,14 @@ func TestUninstallErrorAtImageExists(t *testing.T) {
 
 	mu.ErrorAt = "ImageExists"
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -348,7 +411,14 @@ func TestUninstallErrorAtRemoveDir(t *testing.T) {
 
 	mu.ErrorAt = "RemoveDir"
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -389,7 +459,14 @@ func TestUninstallErrorAtRemoveAlias(t *testing.T) {
 
 	mu.ErrorAt = "RemoveAlias"
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -433,7 +510,14 @@ func TestUninstallErrorAtRemoveImage(t *testing.T) {
 
 	mu.ErrorAt = "RemoveImage"
 
-	uc := NewUninstallCommand(mu)
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
@@ -465,5 +549,87 @@ func TestUninstallErrorAtRemoveImage(t *testing.T) {
 
 	if !reflect.DeepEqual(callStack, mu.Calls) {
 		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
+
+//Test uninstall when config Alias attribute is set to false
+func TestUninstallAliasFalse(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	mu.ImgExist = true
+
+	//Get the executable directory
+	ex, err := os.Executable()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ed := filepath.Dir(ex)
+
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     false,
+	}
+
+	uc := NewUninstallCommand(mu, config)
+
+	args := []string{"python"}
+
+	err = uc.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = uc.Run()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"GetHCLBody",
+		"ParseBody",
+		"ImageExists",
+		"RemoveDir",
+		"RemoveDir",
+		"RemoveImage",
+	}
+
+	//If the call stack doesn't match the test fails
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+
+	//Make a list of images that should have been removed and make sure it matches from the MockUtility
+	var images []string
+
+	//directories to be removed
+	var rmdirs []string
+
+	//Fill lists
+	for _, pack := range mu.Pack.Packages {
+		images = append(images, pack.Image)
+
+		//Loop through volumes in the package
+		for _, vol := range pack.Volumes {
+			rmdirs = append(rmdirs, ed+vol.Path)
+		}
+
+		rmdirs = append(rmdirs, ed+pack.BaseDir)
+	}
+
+	//If the pulled images doesn't match the test fails
+	if !reflect.DeepEqual(images, mu.RemovedImgs) {
+		t.Fatalf("Removed Images does not match the expected Removed Images. Removed Images: %v | Expected Removed Images: %v", mu.RemovedImgs, images)
+	}
+
+	//If the directories made don't match, the test fails
+	if !reflect.DeepEqual(rmdirs, mu.RemovedDirs) {
+		t.Fatalf("Removed directories does not match the expected directories. Removed Directories: %v | Expected Removed Directories: %v", mu.RemovedDirs, rmdirs)
 	}
 }
