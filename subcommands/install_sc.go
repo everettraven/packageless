@@ -24,15 +24,18 @@ type InstallCommand struct {
 	tools utils.Tools
 
 	cp utils.Copier
+
+	config utils.Config
 }
 
 //Instantiation method for a new InstallCommand
-func NewInstallCommand(tools utils.Tools, cp utils.Copier) *InstallCommand {
+func NewInstallCommand(tools utils.Tools, cp utils.Copier, config utils.Config) *InstallCommand {
 	//Create a new InstallCommand and set the FlagSet
 	ic := &InstallCommand{
-		fs:    flag.NewFlagSet("install", flag.ContinueOnError),
-		tools: tools,
-		cp:    cp,
+		fs:     flag.NewFlagSet("install", flag.ContinueOnError),
+		tools:  tools,
+		cp:     cp,
+		config: config,
 	}
 
 	return ic
@@ -180,17 +183,19 @@ func (ic *InstallCommand) Run() error {
 
 	}
 
-	//Set the alias for the command
-	fmt.Println("Setting Alias")
+	if ic.config.Alias {
+		//Set the alias for the command
+		fmt.Println("Setting Alias")
 
-	if runtime.GOOS == "windows" {
-		err = ic.tools.AddAliasWin(pack.Name, ed)
-	} else {
-		err = ic.tools.AddAliasUnix(pack.Name, ed)
-	}
+		if runtime.GOOS == "windows" {
+			err = ic.tools.AddAliasWin(pack.Name, ed)
+		} else {
+			err = ic.tools.AddAliasUnix(pack.Name, ed)
+		}
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Println(pack.Name, "successfully installed")

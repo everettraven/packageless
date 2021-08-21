@@ -40,6 +40,7 @@ type Config struct {
 	BaseDir   string `hcl:"base_dir,attr"`
 	StartPort int    `hcl:"start_port,attr"`
 	PortInc   int    `hcl:"port_increment,attr"`
+	Alias     bool   `hcl:"alias,attr"`
 }
 
 //Parse function to parse the HCL body given

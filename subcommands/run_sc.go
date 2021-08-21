@@ -22,14 +22,17 @@ type RunCommand struct {
 	args []string
 
 	tools utils.Tools
+
+	config utils.Config
 }
 
 //Instantiation method for a new RunCommand
-func NewRunCommand(tools utils.Tools) *RunCommand {
+func NewRunCommand(tools utils.Tools, config utils.Config) *RunCommand {
 	//Create a new RunCommand and set the FlagSet
 	rc := &RunCommand{
-		fs:    flag.NewFlagSet("run", flag.ContinueOnError),
-		tools: tools,
+		fs:     flag.NewFlagSet("run", flag.ContinueOnError),
+		tools:  tools,
+		config: config,
 	}
 
 	return rc
@@ -76,16 +79,7 @@ func (rc *RunCommand) Run() error {
 	//Default location of the package list
 	packageList := ed + "/package_list.hcl"
 
-	//Config file location
-	configLoc := ed + "/config.hcl"
-
 	packageListBody, err := rc.tools.GetHCLBody(packageList)
-
-	if err != nil {
-		return err
-	}
-
-	configBody, err := rc.tools.GetHCLBody(configLoc)
 
 	if err != nil {
 		return err
@@ -100,16 +94,6 @@ func (rc *RunCommand) Run() error {
 	}
 
 	packages := parseOut.(utils.PackageHCLUtil)
-
-	//Parse the config file
-	parseOut, err = rc.tools.ParseBody(configBody, utils.Config{})
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
-	config := parseOut.(utils.Config)
 
 	//Look for the package we want in the package list
 	for _, packs := range packages.Packages {
@@ -143,7 +127,7 @@ func (rc *RunCommand) Run() error {
 	var ports []string
 	var volumes []string
 
-	ports = append(ports, strconv.Itoa(config.StartPort)+":"+pack.Port)
+	ports = append(ports, strconv.Itoa(rc.config.StartPort)+":"+pack.Port)
 
 	for _, vol := range pack.Volumes {
 		if vol.Path != "" {
