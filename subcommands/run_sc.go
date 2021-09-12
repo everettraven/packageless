@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
@@ -62,6 +63,19 @@ func (rc *RunCommand) Run() error {
 	//Create variables to use later
 	var found bool
 	var pack utils.Package
+	var version utils.Version
+
+	var packName string
+	var packVersion string
+
+	if strings.Contains(rc.name, ":") {
+		split := strings.Split(rc.name, ":")
+		packName = split[0]
+		packVersion = split[1]
+	} else {
+		packName = rc.name
+		packVersion = "latest"
+	}
 
 	//Create the Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -98,20 +112,26 @@ func (rc *RunCommand) Run() error {
 	//Look for the package we want in the package list
 	for _, packs := range packages.Packages {
 		//If we find it, set some variables and break
-		if packs.Name == rc.name {
-			found = true
+		if packs.Name == packName {
 			pack = packs
-			break
+
+			for _, ver := range pack.Versions {
+				if ver.Version == packVersion {
+					found = true
+					version = ver
+					break
+				}
+			}
 		}
 	}
 
 	//Make sure we have found the package in the package list
 	if !found {
-		return errors.New("Could not find package " + rc.name + " in the package list")
+		return errors.New("Could not find package " + packName + " with version '" + packVersion + "' in the package list")
 	}
 
 	//Check if the corresponding package image is already installed
-	imgExist, err := rc.tools.ImageExists(pack.Image, cli)
+	imgExist, err := rc.tools.ImageExists(version.Image, cli)
 
 	//Check for errors
 	if err != nil {
@@ -120,16 +140,16 @@ func (rc *RunCommand) Run() error {
 
 	//If the image exists the package is already installed
 	if !imgExist {
-		return errors.New("Package " + pack.Name + " is not installed. You must install the package before running it.")
+		return errors.New("Package " + pack.Name + " with version '" + version.Version + "' is not installed. You must install the package before running it.")
 	}
 
 	//Create the variables to use when running the container
 	var ports []string
 	var volumes []string
 
-	ports = append(ports, strconv.Itoa(rc.config.StartPort)+":"+pack.Port)
+	ports = append(ports, strconv.Itoa(rc.config.StartPort)+":"+version.Port)
 
-	for _, vol := range pack.Volumes {
+	for _, vol := range version.Volumes {
 		if vol.Path != "" {
 			volumes = append(volumes, ed+vol.Path+":"+vol.Mount)
 		} else {
@@ -144,7 +164,7 @@ func (rc *RunCommand) Run() error {
 	}
 
 	//Run the container
-	_, err = rc.tools.RunContainer(pack.Image, ports, volumes, pack.Name, rc.args)
+	_, err = rc.tools.RunContainer(version.Image, ports, volumes, pack.Name, rc.args)
 
 	if err != nil {
 		return err

@@ -96,7 +96,7 @@ func TestUninstallNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent in the package list"
+	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
 
 	err := uc.Init(args)
 
@@ -142,7 +142,7 @@ func TestUninstallImageNotExist(t *testing.T) {
 
 	args := []string{"python"}
 
-	expectedErr := "Package python is not installed."
+	expectedErr := "Package python with version 'latest' is not installed."
 
 	err := uc.Init(args)
 
@@ -237,15 +237,19 @@ func TestUninstallFlow(t *testing.T) {
 
 	//Fill lists
 	for _, pack := range mu.Pack.Packages {
-		images = append(images, pack.Image)
+		//Just use the first version
+		version := pack.Versions[0]
+		images = append(images, version.Image)
 		aliasCmds = append(aliasCmds, pack.Name)
 
 		//Loop through volumes in the package
-		for _, vol := range pack.Volumes {
+		for _, vol := range version.Volumes {
 			rmdirs = append(rmdirs, ed+vol.Path)
 		}
 
 		rmdirs = append(rmdirs, ed+pack.BaseDir)
+		//Just use the first package for the test
+		break
 	}
 
 	//If the pulled images doesn't match the test fails
@@ -613,14 +617,19 @@ func TestUninstallAliasFalse(t *testing.T) {
 
 	//Fill lists
 	for _, pack := range mu.Pack.Packages {
-		images = append(images, pack.Image)
+		//Just use the first version
+		version := pack.Versions[0]
+		images = append(images, version.Image)
 
 		//Loop through volumes in the package
-		for _, vol := range pack.Volumes {
+		for _, vol := range version.Volumes {
 			rmdirs = append(rmdirs, ed+vol.Path)
 		}
 
 		rmdirs = append(rmdirs, ed+pack.BaseDir)
+
+		//Just use the first package
+		break
 	}
 
 	//If the pulled images doesn't match the test fails
@@ -631,5 +640,49 @@ func TestUninstallAliasFalse(t *testing.T) {
 	//If the directories made don't match, the test fails
 	if !reflect.DeepEqual(rmdirs, mu.RemovedDirs) {
 		t.Fatalf("Removed directories does not match the expected directories. Removed Directories: %v | Expected Removed Directories: %v", mu.RemovedDirs, rmdirs)
+	}
+}
+
+//Test the uninstall subcommand with a package with a nonexistent version specified
+func TestUninstallNonExistVersion(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	uc := NewUninstallCommand(mu, config)
+
+	args := []string{"python:idontexist"}
+
+	expectedErr := "Could not find package python with version 'idontexist' in the package list"
+
+	err := uc.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = uc.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"GetHCLBody",
+		"ParseBody",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
 	}
 }

@@ -97,7 +97,7 @@ func TestRunNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent in the package list"
+	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
 
 	err := rc.Init(args)
 
@@ -143,7 +143,7 @@ func TestRunImageNotExist(t *testing.T) {
 
 	args := []string{"python"}
 
-	expectedErr := "Package python is not installed. You must install the package before running it."
+	expectedErr := "Package python with version 'latest' is not installed. You must install the package before running it."
 
 	err := rc.Init(args)
 
@@ -225,12 +225,12 @@ func TestRunFlowNoRunArgs(t *testing.T) {
 	}
 
 	//Make sure the image that was ran matches the package image
-	if mu.RunImage != mu.Pack.Packages[0].Image {
-		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pack.Packages[0].Image)
+	if mu.RunImage != mu.Pack.Packages[0].Versions[0].Image {
+		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pack.Packages[0].Versions[0].Image)
 	}
 
-	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pack.Packages[0].Port}
-	volume := []string{ed + mu.Pack.Packages[0].Volumes[0].Path + ":" + mu.Pack.Packages[0].Volumes[0].Mount}
+	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pack.Packages[0].Versions[0].Port}
+	volume := []string{ed + mu.Pack.Packages[0].Versions[0].Volumes[0].Path + ":" + mu.Pack.Packages[0].Versions[0].Volumes[0].Mount}
 
 	//Make sure the ports passed in matches
 	if !reflect.DeepEqual(mu.RunPorts, port) {
@@ -304,12 +304,12 @@ func TestRunFlowRunArgs(t *testing.T) {
 	}
 
 	//Make sure the image that was ran matches the package image
-	if mu.RunImage != mu.Pack.Packages[0].Image {
-		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pack.Packages[0].Image)
+	if mu.RunImage != mu.Pack.Packages[0].Versions[0].Image {
+		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pack.Packages[0].Versions[0].Image)
 	}
 
-	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pack.Packages[0].Port}
-	volume := []string{ed + mu.Pack.Packages[0].Volumes[0].Path + ":" + mu.Pack.Packages[0].Volumes[0].Mount}
+	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pack.Packages[0].Versions[0].Port}
+	volume := []string{ed + mu.Pack.Packages[0].Versions[0].Volumes[0].Path + ":" + mu.Pack.Packages[0].Versions[0].Volumes[0].Mount}
 
 	//Make sure the ports passed in matches
 	if !reflect.DeepEqual(mu.RunPorts, port) {
@@ -507,6 +507,50 @@ func TestRunErrorAtRunContainer(t *testing.T) {
 		"ParseBody",
 		"ImageExists",
 		"RunContainer",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
+
+//Test the Run subcommand with a package with a nonexistent version specified
+func TestRunNonExistVersion(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 3000,
+		Alias:     true,
+	}
+
+	rc := NewRunCommand(mu, config)
+
+	args := []string{"python:idontexist"}
+
+	expectedErr := "Could not find package python with version 'idontexist' in the package list"
+
+	err := rc.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = rc.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"GetHCLBody",
+		"ParseBody",
 	}
 
 	if !reflect.DeepEqual(callStack, mu.Calls) {

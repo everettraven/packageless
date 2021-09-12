@@ -122,7 +122,7 @@ func TestMain_OsArgs(t *testing.T) {
 			exit, err := wrappedMain()
 
 			if (exit != 0) != tc.Err {
-				t.Fatalf("Fail - Exit code did not match the expected")
+				t.Fatalf("Fail - Exit code did not match the expected | Received Error: %s", err)
 			} else {
 				if tc.ExpectedErr != "" {
 					if err.Error() != tc.ExpectedErr {

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
@@ -59,6 +60,19 @@ func (uc *UninstallCommand) Run() error {
 	//Create variables to use later
 	var found bool
 	var pack utils.Package
+	var version utils.Version
+
+	var packName string
+	var packVersion string
+
+	if strings.Contains(uc.name, ":") {
+		split := strings.Split(uc.name, ":")
+		packName = split[0]
+		packVersion = split[1]
+	} else {
+		packName = uc.name
+		packVersion = "latest"
+	}
 
 	//Create the Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -100,20 +114,26 @@ func (uc *UninstallCommand) Run() error {
 	//Look for the package we want in the package list
 	for _, packs := range packages.Packages {
 		//If we find it, set some variables and break
-		if packs.Name == uc.name {
-			found = true
+		if packs.Name == packName {
 			pack = packs
-			break
+
+			for _, ver := range pack.Versions {
+				if ver.Version == packVersion {
+					found = true
+					version = ver
+					break
+				}
+			}
 		}
 	}
 
 	//Make sure we have found the package in the package list
 	if !found {
-		return errors.New("Could not find package " + uc.name + " in the package list")
+		return errors.New("Could not find package " + packName + " with version '" + packVersion + "' in the package list")
 	}
 
 	//Check if the corresponding package image is already Uninstalled
-	imgExist, err := uc.tools.ImageExists(pack.Image, cli)
+	imgExist, err := uc.tools.ImageExists(version.Image, cli)
 
 	//Check for errors
 	if err != nil {
@@ -122,16 +142,16 @@ func (uc *UninstallCommand) Run() error {
 
 	//If the image doesn't exist it can't be uninstalled
 	if !imgExist {
-		return errors.New("Package " + pack.Name + " is not installed.")
+		return errors.New("Package " + pack.Name + " with version '" + version.Version + "' is not installed.")
 	}
 
-	fmt.Println("Removing package", pack.Name)
+	fmt.Println("Removing", pack.Name+":"+version.Version)
 
 	//Check for the directories that correspond to this packages volumes
 	fmt.Println("Removing package directories")
 
 	//Check the volumes and remove the directories if they exist
-	for _, vol := range pack.Volumes {
+	for _, vol := range version.Volumes {
 		//Make sure that a path is given.
 		if vol.Path != "" {
 			err = uc.tools.RemoveDir(ed + vol.Path)
@@ -152,7 +172,7 @@ func (uc *UninstallCommand) Run() error {
 	fmt.Println("Removing Image")
 
 	//Remove the image
-	err = uc.tools.RemoveImage(pack.Image, cli)
+	err = uc.tools.RemoveImage(version.Image, cli)
 
 	//Check for errors
 	if err != nil {
@@ -164,9 +184,17 @@ func (uc *UninstallCommand) Run() error {
 		fmt.Println("Removing Alias")
 
 		if runtime.GOOS == "windows" {
-			err = uc.tools.RemoveAliasWin(pack.Name, ed)
+			if version.Version != "latest" {
+				err = uc.tools.RemoveAliasWin(pack.Name+":"+version.Version, ed)
+			} else {
+				err = uc.tools.RemoveAliasWin(pack.Name, ed)
+			}
 		} else {
-			err = uc.tools.RemoveAliasUnix(pack.Name, ed)
+			if version.Version != "latest" {
+				err = uc.tools.RemoveAliasUnix(pack.Name+":"+version.Version, ed)
+			} else {
+				err = uc.tools.RemoveAliasUnix(pack.Name, ed)
+			}
 		}
 
 		if err != nil {
