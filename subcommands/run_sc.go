@@ -140,7 +140,7 @@ func (rc *RunCommand) Run() error {
 
 	//If the image exists the package is already installed
 	if !imgExist {
-		return errors.New("Package " + pack.Name + " is not installed. You must install the package before running it.")
+		return errors.New("Package " + pack.Name + " with version '" + version.Version + "' is not installed. You must install the package before running it.")
 	}
 
 	//Create the variables to use when running the container

@@ -142,7 +142,7 @@ func TestUninstallImageNotExist(t *testing.T) {
 
 	args := []string{"python"}
 
-	expectedErr := "Package python is not installed."
+	expectedErr := "Package python with version 'latest' is not installed."
 
 	err := uc.Init(args)
 

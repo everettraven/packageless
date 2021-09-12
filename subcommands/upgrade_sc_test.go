@@ -522,7 +522,7 @@ func TestUpgradeImageNotExists(t *testing.T) {
 	mu.ImgExist = false
 
 	args := []string{"python"}
-	expectedErr := "Package: python is not installed. It must be installed before it can be upgraded."
+	expectedErr := "Package: python with version 'latest' is not installed. It must be installed before it can be upgraded."
 
 	mcp := &utils.MockCopyTool{}
 

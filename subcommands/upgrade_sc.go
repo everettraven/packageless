@@ -135,10 +135,10 @@ func (ic *UpgradeCommand) Run() error {
 
 		//If the image exists the package is already installed
 		if !imgExist {
-			return errors.New("Package: " + pack.Name + " is not installed. It must be installed before it can be upgraded.")
+			return errors.New("Package: " + pack.Name + " with version '" + version.Version + "' is not installed. It must be installed before it can be upgraded.")
 		}
 
-		fmt.Println("Upgrading", pack.Name)
+		fmt.Println("Upgrading", pack.Name+":"+version.Version)
 		//Pull the image down from Docker Hub
 		err = ic.tools.PullImage(version.Image, cli)
 
@@ -210,7 +210,7 @@ func (ic *UpgradeCommand) Run() error {
 					continue
 				}
 
-				fmt.Println("Upgrading", pack.Name)
+				fmt.Println("Upgrading", pack.Name+":"+ver.Version)
 				//Pull the image down from Docker Hub
 				err = ic.tools.PullImage(ver.Image, cli)
 

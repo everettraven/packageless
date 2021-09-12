@@ -142,10 +142,10 @@ func (uc *UninstallCommand) Run() error {
 
 	//If the image doesn't exist it can't be uninstalled
 	if !imgExist {
-		return errors.New("Package " + pack.Name + " is not installed.")
+		return errors.New("Package " + pack.Name + " with version '" + version.Version + "' is not installed.")
 	}
 
-	fmt.Println("Removing package", pack.Name)
+	fmt.Println("Removing", pack.Name+":"+version.Version)
 
 	//Check for the directories that correspond to this packages volumes
 	fmt.Println("Removing package directories")

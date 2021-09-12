@@ -143,7 +143,7 @@ func TestRunImageNotExist(t *testing.T) {
 
 	args := []string{"python"}
 
-	expectedErr := "Package python is not installed. You must install the package before running it."
+	expectedErr := "Package python with version 'latest' is not installed. You must install the package before running it."
 
 	err := rc.Init(args)
 

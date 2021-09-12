@@ -143,7 +143,7 @@ func (ic *InstallCommand) Run() error {
 		return errors.New("Package " + pack.Name + " is already installed")
 	}
 
-	fmt.Println("Installing", pack.Name)
+	fmt.Println("Installing", pack.Name+":"+version.Version)
 	//Pull the image down from Docker Hub
 	err = ic.tools.PullImage(version.Image, cli)
 
