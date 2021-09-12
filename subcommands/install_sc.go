@@ -208,9 +208,17 @@ func (ic *InstallCommand) Run() error {
 		fmt.Println("Setting Alias")
 
 		if runtime.GOOS == "windows" {
-			err = ic.tools.AddAliasWin(pack.Name, ed)
+			if version.Version != "latest" {
+				err = ic.tools.AddAliasWin(pack.Name+":"+version.Version, ed)
+			} else {
+				err = ic.tools.AddAliasWin(pack.Name, ed)
+			}
 		} else {
-			err = ic.tools.AddAliasUnix(pack.Name, ed)
+			if version.Version != "latest" {
+				err = ic.tools.AddAliasUnix(pack.Name+":"+version.Version, ed)
+			} else {
+				err = ic.tools.AddAliasUnix(pack.Name, ed)
+			}
 		}
 
 		if err != nil {
