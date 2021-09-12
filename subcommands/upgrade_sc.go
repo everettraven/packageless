@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
@@ -56,6 +57,19 @@ func (ic *UpgradeCommand) Run() error {
 	//Create variables to use later
 	var found bool
 	var pack utils.Package
+	var version utils.Version
+
+	var packName string
+	var packVersion string
+
+	if strings.Contains(ic.name, ":") {
+		split := strings.Split(ic.name, ":")
+		packName = split[0]
+		packVersion = split[1]
+	} else {
+		packName = ic.name
+		packVersion = "latest"
+	}
 
 	//Create the Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -93,20 +107,26 @@ func (ic *UpgradeCommand) Run() error {
 		//Look for the package we want in the package list
 		for _, packs := range packages.Packages {
 			//If we find it, set some variables and break
-			if packs.Name == ic.name {
-				found = true
+			if packs.Name == packName {
 				pack = packs
-				break
+
+				for _, ver := range pack.Versions {
+					if ver.Version == packVersion {
+						found = true
+						version = ver
+						break
+					}
+				}
 			}
 		}
 
 		//Make sure we have found the package in the package list
 		if !found {
-			return errors.New("Could not find package " + ic.name + " in the package list")
+			return errors.New("Could not find package " + packName + " with version '" + packVersion + "' in the package list")
 		}
 
 		//Check if the corresponding package image is already installed
-		imgExist, err := ic.tools.ImageExists(pack.Image, cli)
+		imgExist, err := ic.tools.ImageExists(version.Image, cli)
 
 		//Check for errors
 		if err != nil {
@@ -120,7 +140,7 @@ func (ic *UpgradeCommand) Run() error {
 
 		fmt.Println("Upgrading", pack.Name)
 		//Pull the image down from Docker Hub
-		err = ic.tools.PullImage(pack.Image, cli)
+		err = ic.tools.PullImage(version.Image, cli)
 
 		if err != nil {
 			return err
@@ -129,7 +149,7 @@ func (ic *UpgradeCommand) Run() error {
 		fmt.Println("Updating package directories")
 
 		//Check the volumes and create the directories for them if they don't already exist
-		for _, vol := range pack.Volumes {
+		for _, vol := range version.Volumes {
 			//Make sure that a path is given. If not we already assume that the working directory will be mounted
 			if vol.Path != "" {
 				err = ic.tools.UpgradeDir(ed + vol.Path)
@@ -141,11 +161,11 @@ func (ic *UpgradeCommand) Run() error {
 		}
 
 		//Check and see if any files need to be copied from the container to one of the volumes on the host.
-		if len(pack.Copies) > 0 {
+		if len(version.Copies) > 0 {
 
 			fmt.Println("Copying necessary files 1/3")
 			//Create the container so that we can copy the files over to the right places
-			containerID, err := ic.tools.CreateContainer(pack.Image, cli)
+			containerID, err := ic.tools.CreateContainer(version.Image, cli)
 
 			if err != nil {
 				return err
@@ -153,7 +173,7 @@ func (ic *UpgradeCommand) Run() error {
 
 			fmt.Println("Copying necessary files 2/3")
 			//Copy the files from the container to the locations
-			for _, copy := range pack.Copies {
+			for _, copy := range version.Copies {
 				err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
 
 				if err != nil {
@@ -175,75 +195,78 @@ func (ic *UpgradeCommand) Run() error {
 	} else {
 		//Loop through the packages in the package list
 		for _, pack := range packages.Packages {
-			//Check if the corresponding package image is already installed
-			imgExist, err := ic.tools.ImageExists(pack.Image, cli)
 
-			//Check for errors
-			if err != nil {
-				return err
-			}
+			for _, ver := range pack.Versions {
+				//Check if the corresponding package image is already installed
+				imgExist, err := ic.tools.ImageExists(ver.Image, cli)
 
-			//If the image exists the package is already installed
-			if !imgExist {
-				continue
-			}
-
-			fmt.Println("Upgrading", pack.Name)
-			//Pull the image down from Docker Hub
-			err = ic.tools.PullImage(pack.Image, cli)
-
-			if err != nil {
-				return err
-			}
-
-			fmt.Println("Updating package directories")
-
-			//Check the volumes and create the directories for them if they don't already exist
-			for _, vol := range pack.Volumes {
-				//Make sure that a path is given. If not we already assume that the working directory will be mounted
-				if vol.Path != "" {
-					err = ic.tools.UpgradeDir(ed + vol.Path)
-
-					if err != nil {
-						return err
-					}
+				//Check for errors
+				if err != nil {
+					return err
 				}
-			}
 
-			//Check and see if any files need to be copied from the container to one of the volumes on the host.
-			if len(pack.Copies) > 0 {
+				//If the image exists the package is already installed
+				if !imgExist {
+					continue
+				}
 
-				fmt.Println("Copying necessary files 1/3")
-				//Create the container so that we can copy the files over to the right places
-				containerID, err := ic.tools.CreateContainer(pack.Image, cli)
+				fmt.Println("Upgrading", pack.Name)
+				//Pull the image down from Docker Hub
+				err = ic.tools.PullImage(ver.Image, cli)
 
 				if err != nil {
 					return err
 				}
 
-				fmt.Println("Copying necessary files 2/3")
-				//Copy the files from the container to the locations
-				for _, copy := range pack.Copies {
-					err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
+				fmt.Println("Updating package directories")
+
+				//Check the volumes and create the directories for them if they don't already exist
+				for _, vol := range ver.Volumes {
+					//Make sure that a path is given. If not we already assume that the working directory will be mounted
+					if vol.Path != "" {
+						err = ic.tools.UpgradeDir(ed + vol.Path)
+
+						if err != nil {
+							return err
+						}
+					}
+				}
+
+				//Check and see if any files need to be copied from the container to one of the volumes on the host.
+				if len(ver.Copies) > 0 {
+
+					fmt.Println("Copying necessary files 1/3")
+					//Create the container so that we can copy the files over to the right places
+					containerID, err := ic.tools.CreateContainer(ver.Image, cli)
 
 					if err != nil {
 						return err
 					}
+
+					fmt.Println("Copying necessary files 2/3")
+					//Copy the files from the container to the locations
+					for _, copy := range ver.Copies {
+						err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
+
+						if err != nil {
+							return err
+						}
+					}
+
+					fmt.Println("Copying necessary files 3/3")
+					//Remove the Container
+					err = ic.tools.RemoveContainer(containerID, cli)
+
+					if err != nil {
+						return err
+					}
+
+					fmt.Println(pack.Name, "successfully upgraded")
 				}
 
-				fmt.Println("Copying necessary files 3/3")
-				//Remove the Container
-				err = ic.tools.RemoveContainer(containerID, cli)
-
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(pack.Name, "successfully upgraded")
 			}
 
 		}
-
 	}
 
 	return nil

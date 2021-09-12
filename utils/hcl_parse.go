@@ -22,9 +22,14 @@ type Volume struct {
 
 //Package object to parse the package block in the package list
 type Package struct {
-	Name    string   `hcl:"name,label"`
+	Name     string    `hcl:"name,label"`
+	BaseDir  string    `hcl:"base_dir,attr"`
+	Versions []Version `hcl:"version,block"`
+}
+
+type Version struct {
+	Version string   `hcl:"version,label"`
 	Image   string   `hcl:"image,attr"`
-	BaseDir string   `hcl:"base_dir,attr"`
 	Volumes []Volume `hcl:"volume,block"`
 	Copies  []*Copy  `hcl:"copy,block"`
 	Port    string   `hcl:"port,optional"`

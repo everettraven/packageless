@@ -90,21 +90,27 @@ func NewMockUtility() *MockUtility {
 			Packages: []Package{
 				{
 					Name:    "python",
-					Image:   "packageless/python",
 					BaseDir: "/base",
-					Volumes: []Volume{
+					Versions: []Version{
 						{
-							Path:  "/a/path",
-							Mount: "/another/one",
+							Version: "latest",
+							Image:   "packageless/python",
+
+							Volumes: []Volume{
+								{
+									Path:  "/a/path",
+									Mount: "/another/one",
+								},
+							},
+							Copies: []*Copy{
+								{
+									Source: "/source/path",
+									Dest:   "/destination",
+								},
+							},
+							Port: "3000",
 						},
 					},
-					Copies: []*Copy{
-						{
-							Source: "/source/path",
-							Dest:   "/destination",
-						},
-					},
-					Port: "3000",
 				},
 			},
 		},

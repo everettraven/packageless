@@ -129,20 +129,25 @@ func TestInstallFlow(t *testing.T) {
 
 	//Fill lists
 	for _, pack := range mu.Pack.Packages {
-		images = append(images, pack.Image)
+		//Just use the first version
+		version := pack.Versions[0]
+		images = append(images, version.Image)
 		mkdirs = append(mkdirs, ed+pack.BaseDir)
 		aliasCmds = append(aliasCmds, pack.Name)
 
 		//Loop through volumes in the package
-		for _, vol := range pack.Volumes {
+		for _, vol := range version.Volumes {
 			mkdirs = append(mkdirs, ed+vol.Path)
 		}
 
 		//Loop through the copies in the package
-		for _, copy := range pack.Copies {
+		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
 		}
+
+		//Just use the first package
+		break
 	}
 
 	//If the pulled images doesn't match the test fails
@@ -737,7 +742,7 @@ func TestInstallNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent in the package list"
+	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
 
 	err := ic.Init(args)
 
@@ -834,19 +839,24 @@ func TestInstallAliasFalse(t *testing.T) {
 
 	//Fill lists
 	for _, pack := range mu.Pack.Packages {
-		images = append(images, pack.Image)
+		//Just use the first version
+		version := pack.Versions[0]
+		images = append(images, version.Image)
 		mkdirs = append(mkdirs, ed+pack.BaseDir)
 
 		//Loop through volumes in the package
-		for _, vol := range pack.Volumes {
+		for _, vol := range version.Volumes {
 			mkdirs = append(mkdirs, ed+vol.Path)
 		}
 
 		//Loop through the copies in the package
-		for _, copy := range pack.Copies {
+		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
 		}
+
+		//Just use the first package
+		break
 	}
 
 	//If the pulled images doesn't match the test fails
@@ -884,4 +894,50 @@ func TestInstallAliasFalse(t *testing.T) {
 		t.Fatalf("RemoveContainer ContainerID does not match the expected ContainerID. ContainerID: %s | Expected ContainerID: %s", mu.RemoveContainerID, mu.ContainerID)
 	}
 
+}
+
+//Test the install function with a nonexistent package version
+func TestInstallNonExistVersion(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	mcp := &utils.MockCopyTool{}
+
+	config := utils.Config{
+		BaseDir:   "./",
+		PortInc:   1,
+		StartPort: 5000,
+		Alias:     true,
+	}
+
+	ic := NewInstallCommand(mu, mcp, config)
+
+	args := []string{"python:idontexist"}
+
+	expectedErr := "Could not find package python with version 'idontexist' in the package list"
+
+	err := ic.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = ic.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"GetHCLBody",
+		"ParseBody",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
 }

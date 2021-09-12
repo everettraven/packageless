@@ -1,20 +1,24 @@
 package "test" {
-    image="packageless/testing"
     base_dir="/base"
+
+    version "latest" {
+        image="packageless/testing"
     
-    volume {
-        path="/a/path"
-        mount="/mount/path"
-    }
+        volume {
+            path="/a/path"
+            mount="/mount/path"
+        }
 
-    volume {
-        mount="/run/"
-    }
+        volume {
+            mount="/run/"
+        }
 
-    copy {
-        source="/a/source"
-        dest="/a/dest"
-    }
+        copy {
+            source="/a/source"
+            dest="/a/dest"
+        }
 
-    port="3000"
+        port="3000"
+    }
+    
 }

@@ -65,20 +65,23 @@ func TestParseBodyConfig(t *testing.T) {
 func TestParseBodyPackageWithCopy(t *testing.T) {
 	//Create the HCL byte array
 	hcl := []byte(`package "test_pack" {
-		image="test"
 		base_dir="/base"
+		version "latest" {
+			image="test"
+			
+			volume {
+				path="/test/path"
+				mount="/test/"
+			}
 		
-		volume {
-			path="/test/path"
-			mount="/test/"
+			copy {
+				source="/test_source/"
+				dest="/test_dest/"
+			}
+		
+			port="3000"
 		}
-	
-		copy {
-			source="/test_source/"
-			dest="/test_dest/"
-		}
-	
-		port="3000"
+		
 	}`)
 
 	//Create the parser
@@ -121,22 +124,35 @@ func TestParseBodyPackageWithCopy(t *testing.T) {
 		t.Fatal("Package base directory should be '/base' | Received: " + pack.BaseDir)
 	}
 
+	//Make sure there is only one version
+
+	if len(pack.Versions) != 1 {
+		t.Fatal("The # of versions expected is '1' | Received: " + strconv.Itoa(len(pack.Versions)))
+	}
+
+	//Get the package version and make sure the fields are correct
+	version := pack.Versions[0]
+
+	if version.Version != "latest" {
+		t.Fatal("Package version should be 'latest' | Received: " + version.Version)
+	}
+
 	//Make sure the package port is correct
-	if pack.Port != "3000" {
-		t.Fatal("Package port should be '3000' | Received: " + pack.Port)
+	if version.Port != "3000" {
+		t.Fatal("Package port should be '3000' | Received: " + version.Port)
 	}
 
 	//Make sure the package image is correct
-	if pack.Image != "test" {
-		t.Fatal("Package image should be 'test' | Received: " + pack.Image)
+	if version.Image != "test" {
+		t.Fatal("Package image should be 'test' | Received: " + version.Image)
 	}
 
 	//Make sure the volumes array is of length 1
-	if len(pack.Volumes) != 1 {
-		t.Fatal("Package # of volumes should be '1' | Received: " + strconv.Itoa(len(pack.Volumes)))
+	if len(version.Volumes) != 1 {
+		t.Fatal("Package # of volumes should be '1' | Received: " + strconv.Itoa(len(version.Volumes)))
 	}
 
-	vol := pack.Volumes[0]
+	vol := version.Volumes[0]
 
 	//Make sure the volumes array path is correct
 	if vol.Path != "/test/path" {
@@ -149,11 +165,11 @@ func TestParseBodyPackageWithCopy(t *testing.T) {
 	}
 
 	//Make sure the copies array is of length 1
-	if len(pack.Copies) != 1 {
-		t.Fatal("Package # of copies should be '1' | Received: " + strconv.Itoa(len(pack.Copies)))
+	if len(version.Copies) != 1 {
+		t.Fatal("Package # of copies should be '1' | Received: " + strconv.Itoa(len(version.Copies)))
 	}
 
-	cp := pack.Copies[0]
+	cp := version.Copies[0]
 
 	//Make sure the copy source is correct
 	if cp.Source != "/test_source/" {
@@ -171,15 +187,17 @@ func TestParseBodyPackageWithCopy(t *testing.T) {
 func TestParseBodyPackageNoCopy(t *testing.T) {
 	//Create the HCL byte array
 	hcl := []byte(`package "test_pack" {
-		image="test"
 		base_dir="/base"
+		version "latest" {
+			image="test"
+			
+			volume {
+				path="/test/path"
+				mount="/test/"
+			}
 		
-		volume {
-			path="/test/path"
-			mount="/test/"
+			port="3000"
 		}
-	
-		port="3000"
 	}`)
 
 	//Create the parser
@@ -222,22 +240,34 @@ func TestParseBodyPackageNoCopy(t *testing.T) {
 		t.Fatal("Package base directory should be '/base' | Received: " + pack.BaseDir)
 	}
 
+	//Make sure the number of versions is correct
+	if len(pack.Versions) != 1 {
+		t.Fatal("The # of versions expected is '1' | Received: " + strconv.Itoa(len(pack.Versions)))
+	}
+
+	//Get and check the version values
+	version := pack.Versions[0]
+
+	if version.Version != "latest" {
+		t.Fatal("Package version should be 'latest' | Received: " + version.Version)
+	}
+
 	//Make sure the package port is correct
-	if pack.Port != "3000" {
-		t.Fatal("Package port should be '3000' | Received: " + pack.Port)
+	if version.Port != "3000" {
+		t.Fatal("Package port should be '3000' | Received: " + version.Port)
 	}
 
 	//Make sure the package image is correct
-	if pack.Image != "test" {
-		t.Fatal("Package image should be 'test' | Received: " + pack.Image)
+	if version.Image != "test" {
+		t.Fatal("Package image should be 'test' | Received: " + version.Image)
 	}
 
 	//Make sure the volumes array is of length 1
-	if len(pack.Volumes) != 1 {
-		t.Fatal("Package # of volumes should be '1' | Received: " + strconv.Itoa(len(pack.Volumes)))
+	if len(version.Volumes) != 1 {
+		t.Fatal("Package # of volumes should be '1' | Received: " + strconv.Itoa(len(version.Volumes)))
 	}
 
-	vol := pack.Volumes[0]
+	vol := version.Volumes[0]
 
 	//Make sure the volumes array path is correct
 	if vol.Path != "/test/path" {
@@ -250,8 +280,8 @@ func TestParseBodyPackageNoCopy(t *testing.T) {
 	}
 
 	//Make sure the copies array is empty
-	if len(pack.Copies) > 0 {
-		t.Fatal("Package # of copies should be '0' | Received: " + strconv.Itoa(len(pack.Copies)))
+	if len(version.Copies) > 0 {
+		t.Fatal("Package # of copies should be '0' | Received: " + strconv.Itoa(len(version.Copies)))
 	}
 }
 
@@ -339,6 +369,7 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 	pImage := "packageless/testing"
 	pBD := "/base"
 	pPort := "3000"
+	pVersion := "latest"
 	vLen := 2
 	v1Path := "/a/path"
 	v1Mount := "/mount/path"
@@ -355,14 +386,20 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 
 	p := packs.Packages[0]
 
+	version := p.Versions[0]
+
+	if version.Version != pVersion {
+		t.Fatalf("Parse HCL Intergration: Expected Package Version: %s | Received: %s", pVersion, version.Version)
+	}
+
 	//Ensure the package name is correct
 	if p.Name != pName {
 		t.Fatalf("Parse HCL Integration: Expected Package Name: %s | Received: %s", pName, p.Name)
 	}
 
 	//Ensure the package image is correct
-	if p.Image != pImage {
-		t.Fatalf("Parse HCL Integration: Expected Package Image: %s | Received: %s", pImage, p.Image)
+	if version.Image != pImage {
+		t.Fatalf("Parse HCL Integration: Expected Package Image: %s | Received: %s", pImage, version.Image)
 	}
 
 	//Ensure the package base directory is correct
@@ -371,16 +408,16 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 	}
 
 	//Ensure the package port is correct
-	if p.Port != pPort {
-		t.Fatalf("ParseHCL Integration: Expected Package Port: %s | Received: %s", pPort, p.Port)
+	if version.Port != pPort {
+		t.Fatalf("ParseHCL Integration: Expected Package Port: %s | Received: %s", pPort, version.Port)
 	}
 
 	//Ensure the volumes length matches
-	if len(p.Volumes) != vLen {
-		t.Fatalf("ParseHCL Integration: Expected Package Volumes Len: %d | Received: %d", vLen, len(p.Volumes))
+	if len(version.Volumes) != vLen {
+		t.Fatalf("ParseHCL Integration: Expected Package Volumes Len: %d | Received: %d", vLen, len(version.Volumes))
 	}
 
-	vols := p.Volumes
+	vols := version.Volumes
 
 	//Ensure the first volume path matches
 	if vols[0].Path != v1Path {
@@ -403,11 +440,11 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 	}
 
 	//Ensure the copies length matches
-	if len(p.Copies) != cpLen {
-		t.Fatalf("ParseHCL Integration: Expected Package Copies Len: %d | Received: %d", cpLen, len(p.Copies))
+	if len(version.Copies) != cpLen {
+		t.Fatalf("ParseHCL Integration: Expected Package Copies Len: %d | Received: %d", cpLen, len(version.Copies))
 	}
 
-	cp := p.Copies[0]
+	cp := version.Copies[0]
 
 	//Ensure the copy source matches
 	if cp.Source != cpSource {

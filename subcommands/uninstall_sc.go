@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/docker/docker/client"
 	"github.com/everettraven/packageless/utils"
@@ -59,6 +60,19 @@ func (uc *UninstallCommand) Run() error {
 	//Create variables to use later
 	var found bool
 	var pack utils.Package
+	var version utils.Version
+
+	var packName string
+	var packVersion string
+
+	if strings.Contains(uc.name, ":") {
+		split := strings.Split(uc.name, ":")
+		packName = split[0]
+		packVersion = split[1]
+	} else {
+		packName = uc.name
+		packVersion = "latest"
+	}
 
 	//Create the Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -100,20 +114,26 @@ func (uc *UninstallCommand) Run() error {
 	//Look for the package we want in the package list
 	for _, packs := range packages.Packages {
 		//If we find it, set some variables and break
-		if packs.Name == uc.name {
-			found = true
+		if packs.Name == packName {
 			pack = packs
-			break
+
+			for _, ver := range pack.Versions {
+				if ver.Version == packVersion {
+					found = true
+					version = ver
+					break
+				}
+			}
 		}
 	}
 
 	//Make sure we have found the package in the package list
 	if !found {
-		return errors.New("Could not find package " + uc.name + " in the package list")
+		return errors.New("Could not find package " + packName + " with version '" + packVersion + "' in the package list")
 	}
 
 	//Check if the corresponding package image is already Uninstalled
-	imgExist, err := uc.tools.ImageExists(pack.Image, cli)
+	imgExist, err := uc.tools.ImageExists(version.Image, cli)
 
 	//Check for errors
 	if err != nil {
@@ -131,7 +151,7 @@ func (uc *UninstallCommand) Run() error {
 	fmt.Println("Removing package directories")
 
 	//Check the volumes and remove the directories if they exist
-	for _, vol := range pack.Volumes {
+	for _, vol := range version.Volumes {
 		//Make sure that a path is given.
 		if vol.Path != "" {
 			err = uc.tools.RemoveDir(ed + vol.Path)
@@ -152,7 +172,7 @@ func (uc *UninstallCommand) Run() error {
 	fmt.Println("Removing Image")
 
 	//Remove the image
-	err = uc.tools.RemoveImage(pack.Image, cli)
+	err = uc.tools.RemoveImage(version.Image, cli)
 
 	//Check for errors
 	if err != nil {

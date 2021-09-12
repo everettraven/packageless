@@ -105,18 +105,21 @@ func TestUpgradeFlow(t *testing.T) {
 
 	//Fill lists
 	for _, pack := range mu.Pack.Packages {
-		images = append(images, pack.Image)
+		//Just use the first version
+		version := pack.Versions[0]
+		images = append(images, version.Image)
 
 		//Loop through volumes in the package
-		for _, vol := range pack.Volumes {
+		for _, vol := range version.Volumes {
 			updirs = append(updirs, ed+vol.Path)
 		}
 
 		//Loop through the copies in the package
-		for _, copy := range pack.Copies {
+		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
 		}
+
 	}
 
 	//If the pulled images doesn't match the test fails
@@ -559,15 +562,20 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 	mu.Pack.Packages = append(mu.Pack.Packages, utils.Package{
 		Name:    "package",
-		Image:   "packageless/package",
 		BaseDir: "/package",
-		Volumes: []utils.Volume{
+		Versions: []utils.Version{
 			{
-				Path:  "/package/config/",
-				Mount: "/package/config_data/",
+				Version: "latest",
+				Image:   "packageless/package",
+				Volumes: []utils.Volume{
+					{
+						Path:  "/package/config/",
+						Mount: "/package/config_data/",
+					},
+				},
+				Port: "4000",
 			},
 		},
-		Port: "4000",
 	})
 
 	mu.ImgExist = true
@@ -632,18 +640,21 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 	//Fill lists
 	for _, pack := range mu.Pack.Packages {
-		images = append(images, pack.Image)
+		//Just get the first version
+		version := pack.Versions[0]
+		images = append(images, version.Image)
 
 		//Loop through volumes in the package
-		for _, vol := range pack.Volumes {
+		for _, vol := range version.Volumes {
 			updirs = append(updirs, ed+vol.Path)
 		}
 
 		//Loop through the copies in the package
-		for _, copy := range pack.Copies {
+		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
 		}
+
 	}
 
 	//If the pulled images doesn't match the test fails
@@ -693,7 +704,46 @@ func TestUpgradeNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent in the package list"
+	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
+
+	err := ic.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = ic.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"GetHCLBody",
+		"ParseBody",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
+
+//Test the Upgrade subcommand if the passed in package version does not exist
+func TestUpgradeNonExistVersion(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	mcp := &utils.MockCopyTool{}
+
+	ic := NewUpgradeCommand(mu, mcp)
+
+	args := []string{"python:idontexist"}
+
+	expectedErr := "Could not find package python with version 'idontexist' in the package list"
 
 	err := ic.Init(args)
 
