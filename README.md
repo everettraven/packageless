@@ -1,22 +1,25 @@
 ![Build Status](https://github.com/everettraven/packageless/workflows/build/badge.svg)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/everettraven/packageless.svg)
 
-# Overview
-**packageless** is a packageless package manager. Now, what does that mean?
+Thanks for checking out **packageless**! Keep reading for some information about **packageless**.
 
-**packageless** utilizes containers to isolate the packages that you would normally install with a package manager into their own environments. Due to this, all package dependencies are installed within the container and don't interact with other packages on your system. This prevents any dependency issues where one package might need a specific version of a dependency and another package needs a different version of that dependency.
+## What is packageless?
+**packageless** is a package manager that utilizes containers to actually run the packages that you "install". With packageless you aren't actually "installing" packages but rather pulling images from a container image registry and creating volumes to be mounted to the container.
 
-## How does packageless work?
+**packageless** will even set aliases so that you can use the packages exactly how you normally would!
 
-**packageless** focuses on "installing" the packages by pulling a container image and modifying the directory **packageless** is installed in to set up any volumes the container may need. In essence, **packageless** installs the package without going through the process of installing the package on the host machine, making installation much easier!
-
-**packageless** also sets aliases whenever the package is installed so it functions exactly how you are used to the package functioning.
+## Why packageless?
+**packageless** solves a few problems:
+- You can now install any package on any OS, as long as it is capable of running in a container
+- Depedency issues are limited due to each package being run in its own isolated environment
+- Installs are faster due to having to only pull an image and not wait to download component from various different places
+- When you uninstall a package it is truly uninstalled, all volumes and images associated with the package are removed
 
 # Development
 **packageless** is still in the very early stages of development and functionality is likely to change drastically
 
 # Contributing
-Contributing guidelines are still in development
+Contributing guidelines can be found at: https://everettraven.github.io/packageless/contrib
 
 # Documentation
-Documentation is still in development
+Documentation can be found at: https://everettraven.github.io/packageless/
