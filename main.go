@@ -57,6 +57,7 @@ func wrappedMain() (int, error) {
 		subcommands.NewUninstallCommand(util, config),
 		subcommands.NewUpgradeCommand(util, cp),
 		subcommands.NewRunCommand(util, config),
+		subcommands.NewVersionCommand(),
 	}
 
 	//Run the subcommands
