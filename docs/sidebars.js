@@ -26,7 +26,8 @@ module.exports = {
               'cli/subcommands/subcommand-install',
               'cli/subcommands/subcommand-uninstall',
               'cli/subcommands/subcommand-run',
-              'cli/subcommands/subcommand-upgrade'
+              'cli/subcommands/subcommand-upgrade',
+              'cli/subcommands/subcommand-version'
             ]
           },
         ]
