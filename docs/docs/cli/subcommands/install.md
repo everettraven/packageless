@@ -5,19 +5,19 @@ title: install
 
 ## Usage
 ```
-packageless install [PACKAGE]
+packageless install [pim]
 ```
 
-Packages follow a particular format. If you specify just the package that you want installed, the latest version of the package that **packageless** has will be installed.
+Packages follow a particular format. If you specify just the pim that you want installed, the latest version of the pim that **packageless** has will be installed.
 
 You can also specify a particular version by following this format:
 ```
-package:version
+pim:version
 ```
 
 To manually specify that you want the latest version you can use:
 ```
-package:latest
+pim:latest
 ```
 however, **packageless** defaults to getting the latest version if one is not specified
 

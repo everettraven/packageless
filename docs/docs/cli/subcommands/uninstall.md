@@ -5,19 +5,19 @@ title: uninstall
 
 ## Usage
 ```
-packageless uninstall [PACKAGE]
+packageless uninstall [pim]
 ```
 
-Packages follow a particular format. If you specify just the package that you want uninstalled, the latest version of the package that **packageless** has will be uninstalled.
+Packages follow a particular format. If you specify just the pim that you want uninstalled, the latest version of the pim that **packageless** has will be uninstalled.
 
 You can also specify a particular version by following this format:
 ```
-package:version
+pim:version
 ```
 
 To manually specify that you want the latest version you can use:
 ```
-package:latest
+pim:latest
 ```
 however, **packageless** defaults to getting the latest version if one is not specified
 
