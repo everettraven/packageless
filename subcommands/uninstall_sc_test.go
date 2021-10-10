@@ -49,15 +49,15 @@ func TestUninstallInit(t *testing.T) {
 	}
 
 	if uc.name != args[0] {
-		t.Fatal("Package Name should have been initialized as: " + args[0] + " but is: " + uc.name)
+		t.Fatal("pim Name should have been initialized as: " + args[0] + " but is: " + uc.name)
 	}
 }
 
-//Test the uninstall subcommand with no package specified
+//Test the uninstall subcommand with no pim specified
 func TestUninstallNoPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	expectedErr := "No package name was found. You must include the name of the package you wish to uninstall."
+	expectedErr := "No pim name was found. You must include the name of the pim you wish to uninstall."
 
 	config := utils.Config{
 		BaseDir:   "./",
@@ -81,7 +81,7 @@ func TestUninstallNoPackage(t *testing.T) {
 	}
 }
 
-//Test the uninstall subcommand with a non existent package specified
+//Test the uninstall subcommand with a non existent pim specified
 func TestUninstallNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -96,7 +96,7 @@ func TestUninstallNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
+	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim list"
 
 	err := uc.Init(args)
 
@@ -142,7 +142,7 @@ func TestUninstallImageNotExist(t *testing.T) {
 
 	args := []string{"python"}
 
-	expectedErr := "Package python with version 'latest' is not installed."
+	expectedErr := "pim python with version 'latest' is not installed."
 
 	err := uc.Init(args)
 
@@ -236,19 +236,19 @@ func TestUninstallFlow(t *testing.T) {
 	var aliasCmds []string
 
 	//Fill lists
-	for _, pack := range mu.Pack.Packages {
+	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
-		version := pack.Versions[0]
+		version := pim.Versions[0]
 		images = append(images, version.Image)
-		aliasCmds = append(aliasCmds, pack.Name)
+		aliasCmds = append(aliasCmds, pim.Name)
 
-		//Loop through volumes in the package
+		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
 			rmdirs = append(rmdirs, ed+vol.Path)
 		}
 
-		rmdirs = append(rmdirs, ed+pack.BaseDir)
-		//Just use the first package for the test
+		rmdirs = append(rmdirs, ed+pim.BaseDir)
+		//Just use the first pim for the test
 		break
 	}
 
@@ -616,19 +616,19 @@ func TestUninstallAliasFalse(t *testing.T) {
 	var rmdirs []string
 
 	//Fill lists
-	for _, pack := range mu.Pack.Packages {
+	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
-		version := pack.Versions[0]
+		version := pim.Versions[0]
 		images = append(images, version.Image)
 
-		//Loop through volumes in the package
+		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
 			rmdirs = append(rmdirs, ed+vol.Path)
 		}
 
-		rmdirs = append(rmdirs, ed+pack.BaseDir)
+		rmdirs = append(rmdirs, ed+pim.BaseDir)
 
-		//Just use the first package
+		//Just use the first pim
 		break
 	}
 
@@ -643,7 +643,7 @@ func TestUninstallAliasFalse(t *testing.T) {
 	}
 }
 
-//Test the uninstall subcommand with a package with a nonexistent version specified
+//Test the uninstall subcommand with a pim with a nonexistent version specified
 func TestUninstallNonExistVersion(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -658,7 +658,7 @@ func TestUninstallNonExistVersion(t *testing.T) {
 
 	args := []string{"python:idontexist"}
 
-	expectedErr := "Could not find package python with version 'idontexist' in the package list"
+	expectedErr := "Could not find pim python with version 'idontexist' in the pim list"
 
 	err := uc.Init(args)
 

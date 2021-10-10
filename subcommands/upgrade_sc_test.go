@@ -39,7 +39,7 @@ func TestUpgradeInit(t *testing.T) {
 	}
 
 	if ic.name != args[0] {
-		t.Fatal("Package Name should have been initialized as: " + args[0] + " but is: " + ic.name)
+		t.Fatal("pim Name should have been initialized as: " + args[0] + " but is: " + ic.name)
 	}
 }
 
@@ -104,17 +104,17 @@ func TestUpgradeFlow(t *testing.T) {
 	var updirs []string
 
 	//Fill lists
-	for _, pack := range mu.Pack.Packages {
+	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
-		version := pack.Versions[0]
+		version := pim.Versions[0]
 		images = append(images, version.Image)
 
-		//Loop through volumes in the package
+		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
 			updirs = append(updirs, ed+vol.Path)
 		}
 
-		//Loop through the copies in the package
+		//Loop through the copies in the pim
 		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
@@ -522,7 +522,7 @@ func TestUpgradeImageNotExists(t *testing.T) {
 	mu.ImgExist = false
 
 	args := []string{"python"}
-	expectedErr := "Package: python with version 'latest' is not installed. It must be installed before it can be upgraded."
+	expectedErr := "pim: python with version 'latest' is not installed. It must be installed before it can be upgraded."
 
 	mcp := &utils.MockCopyTool{}
 
@@ -556,21 +556,21 @@ func TestUpgradeImageNotExists(t *testing.T) {
 	}
 }
 
-//Test the Upgrade subcommand with no arguments passed and 2 packages in the package list
+//Test the Upgrade subcommand with no arguments passed and 2 packages in the pim list
 func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	mu.Pack.Packages = append(mu.Pack.Packages, utils.Package{
-		Name:    "package",
-		BaseDir: "/package",
+	mu.Pim.Pims = append(mu.Pim.Pims, utils.PackageImage{
+		Name:    "pim",
+		BaseDir: "/pim",
 		Versions: []utils.Version{
 			{
 				Version: "latest",
-				Image:   "packageless/package",
+				Image:   "packageless/pim",
 				Volumes: []utils.Volume{
 					{
-						Path:  "/package/config/",
-						Mount: "/package/config_data/",
+						Path:  "/pim/config/",
+						Mount: "/pim/config_data/",
 					},
 				},
 				Port: "4000",
@@ -620,7 +620,7 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 		"ImageExists",
 		"PullImage",
 		"UpgradeDir",
-		//Second Package has no Copy fields so it should end at UpgradeDir
+		//Second pim has no Copy fields so it should end at UpgradeDir
 	}
 
 	//If the call stack doesn't match the test fails
@@ -639,17 +639,17 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 	var updirs []string
 
 	//Fill lists
-	for _, pack := range mu.Pack.Packages {
+	for _, pim := range mu.Pim.Pims {
 		//Just get the first version
-		version := pack.Versions[0]
+		version := pim.Versions[0]
 		images = append(images, version.Image)
 
-		//Loop through volumes in the package
+		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
 			updirs = append(updirs, ed+vol.Path)
 		}
 
-		//Loop through the copies in the package
+		//Loop through the copies in the pim
 		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
@@ -694,7 +694,7 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 }
 
-//Test the Upgrade subcommand if the passed in package does not exist
+//Test the Upgrade subcommand if the passed in pim does not exist
 func TestUpgradeNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -704,7 +704,7 @@ func TestUpgradeNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
+	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim list"
 
 	err := ic.Init(args)
 
@@ -733,7 +733,7 @@ func TestUpgradeNonExistPackage(t *testing.T) {
 	}
 }
 
-//Test the Upgrade subcommand if the passed in package version does not exist
+//Test the Upgrade subcommand if the passed in pim version does not exist
 func TestUpgradeNonExistVersion(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -743,7 +743,7 @@ func TestUpgradeNonExistVersion(t *testing.T) {
 
 	args := []string{"python:idontexist"}
 
-	expectedErr := "Could not find package python with version 'idontexist' in the package list"
+	expectedErr := "Could not find pim python with version 'idontexist' in the pim list"
 
 	err := ic.Init(args)
 

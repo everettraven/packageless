@@ -17,7 +17,7 @@ type UpgradeCommand struct {
 	//FlagSet so that we can create a custom flag
 	fs *flag.FlagSet
 
-	//String for the name of the package to upgrade
+	//String for the name of the pim to upgrade
 	name string
 
 	tools utils.Tools
@@ -45,7 +45,7 @@ func (ic *UpgradeCommand) Name() string {
 //Init - Parses and Populates values of the Upgrade subcommand
 func (ic *UpgradeCommand) Init(args []string) error {
 	if len(args) <= 0 {
-		fmt.Println("No package specified, upgrading all currently installed packages.")
+		fmt.Println("No pim specified, upgrading all currently installed pims.")
 	} else {
 		ic.name = args[0]
 	}
@@ -56,19 +56,19 @@ func (ic *UpgradeCommand) Init(args []string) error {
 func (ic *UpgradeCommand) Run() error {
 	//Create variables to use later
 	var found bool
-	var pack utils.Package
+	var pim utils.PackageImage
 	var version utils.Version
 
-	var packName string
-	var packVersion string
+	var pimName string
+	var pimVersion string
 
 	if strings.Contains(ic.name, ":") {
 		split := strings.Split(ic.name, ":")
-		packName = split[0]
-		packVersion = split[1]
+		pimName = split[0]
+		pimVersion = split[1]
 	} else {
-		packName = ic.name
-		packVersion = "latest"
+		pimName = ic.name
+		pimVersion = "latest"
 	}
 
 	//Create the Docker client
@@ -84,19 +84,19 @@ func (ic *UpgradeCommand) Run() error {
 	}
 	ed := filepath.Dir(ex)
 
-	//Default location of the package list
-	packageList := ed + "/package_list.hcl"
+	//Default location of the pim list
+	pimList := ed + "/package_list.hcl"
 
-	packageListBody, err := ic.tools.GetHCLBody(packageList)
+	pimListBody, err := ic.tools.GetHCLBody(pimList)
 
 	if err != nil {
 		return err
 	}
 
-	//Parse the package list
-	parseOut, err := ic.tools.ParseBody(packageListBody, utils.PackageHCLUtil{})
+	//Parse the pim list
+	parseOut, err := ic.tools.ParseBody(pimListBody, utils.PimHCLUtil{})
 
-	packages := parseOut.(utils.PackageHCLUtil)
+	pims := parseOut.(utils.PimHCLUtil)
 
 	//Check for errors
 	if err != nil {
@@ -104,14 +104,14 @@ func (ic *UpgradeCommand) Run() error {
 	}
 
 	if ic.name != "" {
-		//Look for the package we want in the package list
-		for _, packs := range packages.Packages {
+		//Look for the pim we want in the pim list
+		for _, pimItem := range pims.Pims {
 			//If we find it, set some variables and break
-			if packs.Name == packName {
-				pack = packs
+			if pimItem.Name == pimName {
+				pim = pimItem
 
-				for _, ver := range pack.Versions {
-					if ver.Version == packVersion {
+				for _, ver := range pim.Versions {
+					if ver.Version == pimVersion {
 						found = true
 						version = ver
 						break
@@ -120,12 +120,12 @@ func (ic *UpgradeCommand) Run() error {
 			}
 		}
 
-		//Make sure we have found the package in the package list
+		//Make sure we have found the pim in the pim list
 		if !found {
-			return errors.New("Could not find package " + packName + " with version '" + packVersion + "' in the package list")
+			return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim list")
 		}
 
-		//Check if the corresponding package image is already installed
+		//Check if the corresponding pim image is already installed
 		imgExist, err := ic.tools.ImageExists(version.Image, cli)
 
 		//Check for errors
@@ -133,12 +133,12 @@ func (ic *UpgradeCommand) Run() error {
 			return err
 		}
 
-		//If the image exists the package is already installed
+		//If the image exists the pim is already installed
 		if !imgExist {
-			return errors.New("Package: " + pack.Name + " with version '" + version.Version + "' is not installed. It must be installed before it can be upgraded.")
+			return errors.New("pim: " + pim.Name + " with version '" + version.Version + "' is not installed. It must be installed before it can be upgraded.")
 		}
 
-		fmt.Println("Upgrading", pack.Name+":"+version.Version)
+		fmt.Println("Upgrading", pim.Name+":"+version.Version)
 		//Pull the image down from Docker Hub
 		err = ic.tools.PullImage(version.Image, cli)
 
@@ -146,7 +146,7 @@ func (ic *UpgradeCommand) Run() error {
 			return err
 		}
 
-		fmt.Println("Updating package directories")
+		fmt.Println("Updating pim directories")
 
 		//Check the volumes and create the directories for them if they don't already exist
 		for _, vol := range version.Volumes {
@@ -189,15 +189,15 @@ func (ic *UpgradeCommand) Run() error {
 				return err
 			}
 
-			fmt.Println(pack.Name, "successfully upgraded")
+			fmt.Println(pim.Name, "successfully upgraded")
 
 		}
 	} else {
-		//Loop through the packages in the package list
-		for _, pack := range packages.Packages {
+		//Loop through the pims in the pim list
+		for _, pim := range pims.Pims {
 
-			for _, ver := range pack.Versions {
-				//Check if the corresponding package image is already installed
+			for _, ver := range pim.Versions {
+				//Check if the corresponding pim image is already installed
 				imgExist, err := ic.tools.ImageExists(ver.Image, cli)
 
 				//Check for errors
@@ -205,12 +205,12 @@ func (ic *UpgradeCommand) Run() error {
 					return err
 				}
 
-				//If the image exists the package is already installed
+				//If the image exists the pim is already installed
 				if !imgExist {
 					continue
 				}
 
-				fmt.Println("Upgrading", pack.Name+":"+ver.Version)
+				fmt.Println("Upgrading", pim.Name+":"+ver.Version)
 				//Pull the image down from Docker Hub
 				err = ic.tools.PullImage(ver.Image, cli)
 
@@ -218,7 +218,7 @@ func (ic *UpgradeCommand) Run() error {
 					return err
 				}
 
-				fmt.Println("Updating package directories")
+				fmt.Println("Updating pim directories")
 
 				//Check the volumes and create the directories for them if they don't already exist
 				for _, vol := range ver.Volumes {
@@ -261,7 +261,7 @@ func (ic *UpgradeCommand) Run() error {
 						return err
 					}
 
-					fmt.Println(pack.Name, "successfully upgraded")
+					fmt.Println(pim.Name, "successfully upgraded")
 				}
 
 			}

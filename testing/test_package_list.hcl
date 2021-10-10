@@ -1,4 +1,4 @@
-package "test" {
+pim "test" {
     base_dir="/base"
 
     version "latest" {

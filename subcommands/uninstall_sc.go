@@ -18,7 +18,7 @@ type UninstallCommand struct {
 	//FlagSet so that we can create a custom flag
 	fs *flag.FlagSet
 
-	//String for the name of the package to Uninstall
+	//String for the name of the pim to Uninstall
 	name string
 
 	tools utils.Tools
@@ -47,7 +47,7 @@ func (uc *UninstallCommand) Name() string {
 func (uc *UninstallCommand) Init(args []string) error {
 
 	if len(args) <= 0 {
-		return errors.New("No package name was found. You must include the name of the package you wish to uninstall.")
+		return errors.New("No pim name was found. You must include the name of the pim you wish to uninstall.")
 	}
 
 	uc.name = args[0]
@@ -59,19 +59,19 @@ func (uc *UninstallCommand) Init(args []string) error {
 func (uc *UninstallCommand) Run() error {
 	//Create variables to use later
 	var found bool
-	var pack utils.Package
+	var pim utils.PackageImage
 	var version utils.Version
 
-	var packName string
-	var packVersion string
+	var pimName string
+	var pimVersion string
 
 	if strings.Contains(uc.name, ":") {
 		split := strings.Split(uc.name, ":")
-		packName = split[0]
-		packVersion = split[1]
+		pimName = split[0]
+		pimVersion = split[1]
 	} else {
-		packName = uc.name
-		packVersion = "latest"
+		pimName = uc.name
+		pimVersion = "latest"
 	}
 
 	//Create the Docker client
@@ -87,38 +87,38 @@ func (uc *UninstallCommand) Run() error {
 	}
 	ed := filepath.Dir(ex)
 
-	//Default location of the package list
-	packageList := ed + "/package_list.hcl"
+	//Default location of the pim list
+	pimList := ed + "/package_list.hcl"
 
-	packageListBody, err := uc.tools.GetHCLBody(packageList)
+	pimListBody, err := uc.tools.GetHCLBody(pimList)
 
 	if err != nil {
 		return err
 	}
 
-	//Parse the package list
-	parseOut, err := uc.tools.ParseBody(packageListBody, utils.PackageHCLUtil{})
+	//Parse the pim list
+	parseOut, err := uc.tools.ParseBody(pimListBody, utils.PimHCLUtil{})
 
 	//Check for errors
 	if err != nil {
 		return err
 	}
 
-	packages := parseOut.(utils.PackageHCLUtil)
+	pims := parseOut.(utils.PimHCLUtil)
 
 	//Check for errors
 	if err != nil {
 		return err
 	}
 
-	//Look for the package we want in the package list
-	for _, packs := range packages.Packages {
+	//Look for the pim we want in the pim list
+	for _, pimItem := range pims.Pims {
 		//If we find it, set some variables and break
-		if packs.Name == packName {
-			pack = packs
+		if pimItem.Name == pimName {
+			pim = pimItem
 
-			for _, ver := range pack.Versions {
-				if ver.Version == packVersion {
+			for _, ver := range pim.Versions {
+				if ver.Version == pimVersion {
 					found = true
 					version = ver
 					break
@@ -127,12 +127,12 @@ func (uc *UninstallCommand) Run() error {
 		}
 	}
 
-	//Make sure we have found the package in the package list
+	//Make sure we have found the pim in the pim list
 	if !found {
-		return errors.New("Could not find package " + packName + " with version '" + packVersion + "' in the package list")
+		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim list")
 	}
 
-	//Check if the corresponding package image is already Uninstalled
+	//Check if the corresponding pim is already Uninstalled
 	imgExist, err := uc.tools.ImageExists(version.Image, cli)
 
 	//Check for errors
@@ -142,13 +142,13 @@ func (uc *UninstallCommand) Run() error {
 
 	//If the image doesn't exist it can't be uninstalled
 	if !imgExist {
-		return errors.New("Package " + pack.Name + " with version '" + version.Version + "' is not installed.")
+		return errors.New("pim " + pim.Name + " with version '" + version.Version + "' is not installed.")
 	}
 
-	fmt.Println("Removing", pack.Name+":"+version.Version)
+	fmt.Println("Removing", pim.Name+":"+version.Version)
 
-	//Check for the directories that correspond to this packages volumes
-	fmt.Println("Removing package directories")
+	//Check for the directories that correspond to this pims volumes
+	fmt.Println("Removing pim directories")
 
 	//Check the volumes and remove the directories if they exist
 	for _, vol := range version.Volumes {
@@ -162,8 +162,8 @@ func (uc *UninstallCommand) Run() error {
 		}
 	}
 
-	//Remove the base directory for the package
-	err = uc.tools.RemoveDir(ed + pack.BaseDir)
+	//Remove the base directory for the pim
+	err = uc.tools.RemoveDir(ed + pim.BaseDir)
 
 	if err != nil {
 		return err
@@ -185,15 +185,15 @@ func (uc *UninstallCommand) Run() error {
 
 		if runtime.GOOS == "windows" {
 			if version.Version != "latest" {
-				err = uc.tools.RemoveAliasWin(pack.Name+":"+version.Version, ed)
+				err = uc.tools.RemoveAliasWin(pim.Name+":"+version.Version, ed)
 			} else {
-				err = uc.tools.RemoveAliasWin(pack.Name, ed)
+				err = uc.tools.RemoveAliasWin(pim.Name, ed)
 			}
 		} else {
 			if version.Version != "latest" {
-				err = uc.tools.RemoveAliasUnix(pack.Name+":"+version.Version, ed)
+				err = uc.tools.RemoveAliasUnix(pim.Name+":"+version.Version, ed)
 			} else {
-				err = uc.tools.RemoveAliasUnix(pack.Name, ed)
+				err = uc.tools.RemoveAliasUnix(pim.Name, ed)
 			}
 		}
 

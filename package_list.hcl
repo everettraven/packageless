@@ -1,4 +1,4 @@
-package "python" {
+pim "python" {
     base_dir="/python/"
    
     version "latest" {
