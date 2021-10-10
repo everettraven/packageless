@@ -17,7 +17,7 @@ type RunCommand struct {
 	//FlagSet so that we can create a custom flag
 	fs *flag.FlagSet
 
-	//String for the name of the package to run
+	//String for the name of the pim to run
 	name string
 
 	args []string
@@ -48,7 +48,7 @@ func (rc *RunCommand) Name() string {
 func (rc *RunCommand) Init(args []string) error {
 
 	if len(args) <= 0 {
-		return errors.New("No package name was found. You must include the name of the package you wish to run.")
+		return errors.New("No pim name was found. You must include the name of the pim you wish to run.")
 	}
 
 	rc.name = args[0]
@@ -62,19 +62,19 @@ func (rc *RunCommand) Init(args []string) error {
 func (rc *RunCommand) Run() error {
 	//Create variables to use later
 	var found bool
-	var pack utils.Package
+	var pim utils.PackageImage
 	var version utils.Version
 
-	var packName string
-	var packVersion string
+	var pimName string
+	var pimVersion string
 
 	if strings.Contains(rc.name, ":") {
 		split := strings.Split(rc.name, ":")
-		packName = split[0]
-		packVersion = split[1]
+		pimName = split[0]
+		pimVersion = split[1]
 	} else {
-		packName = rc.name
-		packVersion = "latest"
+		pimName = rc.name
+		pimVersion = "latest"
 	}
 
 	//Create the Docker client
@@ -90,33 +90,33 @@ func (rc *RunCommand) Run() error {
 	}
 	ed := filepath.Dir(ex)
 
-	//Default location of the package list
-	packageList := ed + "/package_list.hcl"
+	//Default location of the pim list
+	pimList := ed + "/package_list.hcl"
 
-	packageListBody, err := rc.tools.GetHCLBody(packageList)
+	pimListBody, err := rc.tools.GetHCLBody(pimList)
 
 	if err != nil {
 		return err
 	}
 
-	//Parse the package list
-	parseOut, err := rc.tools.ParseBody(packageListBody, utils.PackageHCLUtil{})
+	//Parse the pim list
+	parseOut, err := rc.tools.ParseBody(pimListBody, utils.PimHCLUtil{})
 
 	//Check for errors
 	if err != nil {
 		return err
 	}
 
-	packages := parseOut.(utils.PackageHCLUtil)
+	pims := parseOut.(utils.PimHCLUtil)
 
-	//Look for the package we want in the package list
-	for _, packs := range packages.Packages {
+	//Look for the pim we want in the pim list
+	for _, pimItem := range pims.Pims {
 		//If we find it, set some variables and break
-		if packs.Name == packName {
-			pack = packs
+		if pimItem.Name == pimName {
+			pim = pimItem
 
-			for _, ver := range pack.Versions {
-				if ver.Version == packVersion {
+			for _, ver := range pim.Versions {
+				if ver.Version == pimVersion {
 					found = true
 					version = ver
 					break
@@ -125,12 +125,12 @@ func (rc *RunCommand) Run() error {
 		}
 	}
 
-	//Make sure we have found the package in the package list
+	//Make sure we have found the pim in the pim list
 	if !found {
-		return errors.New("Could not find package " + packName + " with version '" + packVersion + "' in the package list")
+		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim list")
 	}
 
-	//Check if the corresponding package image is already installed
+	//Check if the corresponding pim image is already installed
 	imgExist, err := rc.tools.ImageExists(version.Image, cli)
 
 	//Check for errors
@@ -138,9 +138,9 @@ func (rc *RunCommand) Run() error {
 		return err
 	}
 
-	//If the image exists the package is already installed
+	//If the image exists the pim is already installed
 	if !imgExist {
-		return errors.New("Package " + pack.Name + " with version '" + version.Version + "' is not installed. You must install the package before running it.")
+		return errors.New("pim " + pim.Name + " with version '" + version.Version + "' is not installed. You must install the pim before running it.")
 	}
 
 	//Create the variables to use when running the container
@@ -164,7 +164,7 @@ func (rc *RunCommand) Run() error {
 	}
 
 	//Run the container
-	_, err = rc.tools.RunContainer(version.Image, ports, volumes, pack.Name, rc.args)
+	_, err = rc.tools.RunContainer(version.Image, ports, volumes, pim.Name, rc.args)
 
 	if err != nil {
 		return err

@@ -21,7 +21,7 @@ type Volume struct {
 }
 
 //Package object to parse the package block in the package list
-type Package struct {
+type PackageImage struct {
 	Name     string    `hcl:"name,label"`
 	BaseDir  string    `hcl:"base_dir,attr"`
 	Versions []Version `hcl:"version,block"`
@@ -36,8 +36,8 @@ type Version struct {
 }
 
 //PackageHCLUtil object to contain a list of packages and all their attributes after the parsing of the package list
-type PackageHCLUtil struct {
-	Packages []Package `hcl:"package,block"`
+type PimHCLUtil struct {
+	Pims []PackageImage `hcl:"pim,block"`
 }
 
 //Config object to contain the configuration details
@@ -55,19 +55,19 @@ func (u *Utility) ParseBody(body hcl.Body, out interface{}) (interface{}, error)
 	default:
 		return nil, errors.New("Unexpected type passed into the HCL parse function")
 
-	case PackageHCLUtil:
+	case PimHCLUtil:
 		//Create the object to be decoded to
-		var packages PackageHCLUtil
+		var pims PimHCLUtil
 
 		//Decode the parsed HCL to the Object
-		decodeDiags := gohcl.DecodeBody(body, nil, &packages)
+		decodeDiags := gohcl.DecodeBody(body, nil, &pims)
 
 		//Check for errors
 		if decodeDiags.HasErrors() {
-			return packages, errors.New("DecodeDiags: " + decodeDiags.Error())
+			return pims, errors.New("DecodeDiags: " + decodeDiags.Error())
 		}
 
-		return packages, nil
+		return pims, nil
 
 	case Config:
 		//Create the object to be decoded to

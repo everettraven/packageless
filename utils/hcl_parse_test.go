@@ -61,10 +61,10 @@ func TestParseBodyConfig(t *testing.T) {
 	}
 }
 
-//Test the parse body function with a package object that contains the optional copy fields
+//Test the parse body function with a pim object that contains the optional copy fields
 func TestParseBodyPackageWithCopy(t *testing.T) {
 	//Create the HCL byte array
-	hcl := []byte(`package "test_pack" {
+	hcl := []byte(`pim "test_pack" {
 		base_dir="/base"
 		version "latest" {
 			image="test"
@@ -99,29 +99,29 @@ func TestParseBodyPackageWithCopy(t *testing.T) {
 	util := NewUtility()
 
 	//Parse the HCL Body
-	parseOut, err := util.ParseBody(f.Body, PackageHCLUtil{})
+	parseOut, err := util.ParseBody(f.Body, PimHCLUtil{})
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	//Get the package object
-	packs := parseOut.(PackageHCLUtil)
+	//Get the pim object
+	packs := parseOut.(PimHCLUtil)
 
-	//If there is more or less than one package, the test should fail
-	if len(packs.Packages) != 1 {
-		t.Fatal("The # of packages expected is '1' | Received: " + strconv.Itoa(len(packs.Packages)))
+	//If there is more or less than one pim, the test should fail
+	if len(packs.Pims) != 1 {
+		t.Fatal("The # of packages expected is '1' | Received: " + strconv.Itoa(len(packs.Pims)))
 	}
 
-	pack := packs.Packages[0]
-	//Make sure the package name is correct
+	pack := packs.Pims[0]
+	//Make sure the pim name is correct
 	if pack.Name != "test_pack" {
-		t.Fatal("Package name should be 'test_pack' | Received: " + pack.Name)
+		t.Fatal("pim name should be 'test_pack' | Received: " + pack.Name)
 	}
 
-	//Make sure the package base directory is correct
+	//Make sure the pim base directory is correct
 	if pack.BaseDir != "/base" {
-		t.Fatal("Package base directory should be '/base' | Received: " + pack.BaseDir)
+		t.Fatal("pim base directory should be '/base' | Received: " + pack.BaseDir)
 	}
 
 	//Make sure there is only one version
@@ -130,63 +130,63 @@ func TestParseBodyPackageWithCopy(t *testing.T) {
 		t.Fatal("The # of versions expected is '1' | Received: " + strconv.Itoa(len(pack.Versions)))
 	}
 
-	//Get the package version and make sure the fields are correct
+	//Get the pim version and make sure the fields are correct
 	version := pack.Versions[0]
 
 	if version.Version != "latest" {
-		t.Fatal("Package version should be 'latest' | Received: " + version.Version)
+		t.Fatal("pim version should be 'latest' | Received: " + version.Version)
 	}
 
-	//Make sure the package port is correct
+	//Make sure the pim port is correct
 	if version.Port != "3000" {
-		t.Fatal("Package port should be '3000' | Received: " + version.Port)
+		t.Fatal("pim port should be '3000' | Received: " + version.Port)
 	}
 
-	//Make sure the package image is correct
+	//Make sure the pim image is correct
 	if version.Image != "test" {
-		t.Fatal("Package image should be 'test' | Received: " + version.Image)
+		t.Fatal("pim image should be 'test' | Received: " + version.Image)
 	}
 
 	//Make sure the volumes array is of length 1
 	if len(version.Volumes) != 1 {
-		t.Fatal("Package # of volumes should be '1' | Received: " + strconv.Itoa(len(version.Volumes)))
+		t.Fatal("pim # of volumes should be '1' | Received: " + strconv.Itoa(len(version.Volumes)))
 	}
 
 	vol := version.Volumes[0]
 
 	//Make sure the volumes array path is correct
 	if vol.Path != "/test/path" {
-		t.Fatal("Package volume host path should be '/python/packages/' | Received: " + vol.Path)
+		t.Fatal("pim volume host path should be '/python/packages/' | Received: " + vol.Path)
 	}
 
 	//Make sure the volumes mount path is correct
 	if vol.Mount != "/test/" {
-		t.Fatal("Package volume mount should be '/test/' | Received: " + vol.Mount)
+		t.Fatal("pim volume mount should be '/test/' | Received: " + vol.Mount)
 	}
 
 	//Make sure the copies array is of length 1
 	if len(version.Copies) != 1 {
-		t.Fatal("Package # of copies should be '1' | Received: " + strconv.Itoa(len(version.Copies)))
+		t.Fatal("pim # of copies should be '1' | Received: " + strconv.Itoa(len(version.Copies)))
 	}
 
 	cp := version.Copies[0]
 
 	//Make sure the copy source is correct
 	if cp.Source != "/test_source/" {
-		t.Fatal("Package copy source should be '/test_source/' | Received: " + cp.Source)
+		t.Fatal("pim copy source should be '/test_source/' | Received: " + cp.Source)
 	}
 
 	//Make sure the copy destination is correct
 	if cp.Dest != "/test_dest/" {
-		t.Fatal("Package copy dest should be '/test_dest/' | Received: " + cp.Dest)
+		t.Fatal("pim copy dest should be '/test_dest/' | Received: " + cp.Dest)
 	}
 }
 
 //Test
-//Test the parse body function with a package object that does not container the optional copy fields
+//Test the parse body function with a pim object that does not container the optional copy fields
 func TestParseBodyPackageNoCopy(t *testing.T) {
 	//Create the HCL byte array
-	hcl := []byte(`package "test_pack" {
+	hcl := []byte(`pim "test_pack" {
 		base_dir="/base"
 		version "latest" {
 			image="test"
@@ -215,29 +215,29 @@ func TestParseBodyPackageNoCopy(t *testing.T) {
 	util := NewUtility()
 
 	//Parse the HCL Body
-	parseOut, err := util.ParseBody(f.Body, PackageHCLUtil{})
+	parseOut, err := util.ParseBody(f.Body, PimHCLUtil{})
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	//Get the package object
-	packs := parseOut.(PackageHCLUtil)
+	//Get the pim object
+	packs := parseOut.(PimHCLUtil)
 
-	//If there is more or less than one package, the test should fail
-	if len(packs.Packages) != 1 {
-		t.Fatal("The # of packages expected is '1' | Received: " + strconv.Itoa(len(packs.Packages)))
+	//If there is more or less than one pim, the test should fail
+	if len(packs.Pims) != 1 {
+		t.Fatal("The # of packages expected is '1' | Received: " + strconv.Itoa(len(packs.Pims)))
 	}
 
-	pack := packs.Packages[0]
-	//Make sure the package name is correct
+	pack := packs.Pims[0]
+	//Make sure the pim name is correct
 	if pack.Name != "test_pack" {
-		t.Fatal("Package name should be 'test_pack' | Received: " + pack.Name)
+		t.Fatal("pim name should be 'test_pack' | Received: " + pack.Name)
 	}
 
-	//Make sure the package base directory is correct
+	//Make sure the pim base directory is correct
 	if pack.BaseDir != "/base" {
-		t.Fatal("Package base directory should be '/base' | Received: " + pack.BaseDir)
+		t.Fatal("pim base directory should be '/base' | Received: " + pack.BaseDir)
 	}
 
 	//Make sure the number of versions is correct
@@ -249,39 +249,39 @@ func TestParseBodyPackageNoCopy(t *testing.T) {
 	version := pack.Versions[0]
 
 	if version.Version != "latest" {
-		t.Fatal("Package version should be 'latest' | Received: " + version.Version)
+		t.Fatal("pim version should be 'latest' | Received: " + version.Version)
 	}
 
-	//Make sure the package port is correct
+	//Make sure the pim port is correct
 	if version.Port != "3000" {
-		t.Fatal("Package port should be '3000' | Received: " + version.Port)
+		t.Fatal("pim port should be '3000' | Received: " + version.Port)
 	}
 
-	//Make sure the package image is correct
+	//Make sure the pim image is correct
 	if version.Image != "test" {
-		t.Fatal("Package image should be 'test' | Received: " + version.Image)
+		t.Fatal("pim image should be 'test' | Received: " + version.Image)
 	}
 
 	//Make sure the volumes array is of length 1
 	if len(version.Volumes) != 1 {
-		t.Fatal("Package # of volumes should be '1' | Received: " + strconv.Itoa(len(version.Volumes)))
+		t.Fatal("pim # of volumes should be '1' | Received: " + strconv.Itoa(len(version.Volumes)))
 	}
 
 	vol := version.Volumes[0]
 
 	//Make sure the volumes array path is correct
 	if vol.Path != "/test/path" {
-		t.Fatal("Package volume host path should be '/python/packages/' | Received: " + vol.Path)
+		t.Fatal("pim volume host path should be '/python/packages/' | Received: " + vol.Path)
 	}
 
 	//Make sure the volumes mount path is correct
 	if vol.Mount != "/test/" {
-		t.Fatal("Package volume mount should be '/test/' | Received: " + vol.Mount)
+		t.Fatal("pim volume mount should be '/test/' | Received: " + vol.Mount)
 	}
 
 	//Make sure the copies array is empty
 	if len(version.Copies) > 0 {
-		t.Fatal("Package # of copies should be '0' | Received: " + strconv.Itoa(len(version.Copies)))
+		t.Fatal("pim # of copies should be '0' | Received: " + strconv.Itoa(len(version.Copies)))
 	}
 }
 
@@ -339,7 +339,7 @@ func TestHCLParse_Integration_Config(t *testing.T) {
 
 }
 
-//Integration test for reading the test package list file
+//Integration test for reading the test pim list file
 func TestHCLParse_Integration_PackageList(t *testing.T) {
 	//Create the util tool
 	util := NewUtility()
@@ -353,7 +353,7 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 	}
 
 	//Parse the HCL Body into an object
-	parseOut, err := util.ParseBody(body, PackageHCLUtil{})
+	parseOut, err := util.ParseBody(body, PimHCLUtil{})
 
 	//Shouldn't throw an error
 	if err != nil {
@@ -361,7 +361,7 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 	}
 
 	//Get the parsed object
-	packs := parseOut.(PackageHCLUtil)
+	packs := parseOut.(PimHCLUtil)
 
 	//Set expected variables
 	pLen := 1
@@ -380,80 +380,80 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 	cpDest := "/a/dest"
 
 	//Ensure packages length is correct
-	if len(packs.Packages) != pLen {
-		t.Fatalf("Parse HCL Integration: Expected Packages Length: %d | Received: %d", pLen, len(packs.Packages))
+	if len(packs.Pims) != pLen {
+		t.Fatalf("Parse HCL Integration: Expected Packages Length: %d | Received: %d", pLen, len(packs.Pims))
 	}
 
-	p := packs.Packages[0]
+	p := packs.Pims[0]
 
 	version := p.Versions[0]
 
 	if version.Version != pVersion {
-		t.Fatalf("Parse HCL Intergration: Expected Package Version: %s | Received: %s", pVersion, version.Version)
+		t.Fatalf("Parse HCL Intergration: Expected pim Version: %s | Received: %s", pVersion, version.Version)
 	}
 
-	//Ensure the package name is correct
+	//Ensure the pim name is correct
 	if p.Name != pName {
-		t.Fatalf("Parse HCL Integration: Expected Package Name: %s | Received: %s", pName, p.Name)
+		t.Fatalf("Parse HCL Integration: Expected pim Name: %s | Received: %s", pName, p.Name)
 	}
 
-	//Ensure the package image is correct
+	//Ensure the pim image is correct
 	if version.Image != pImage {
-		t.Fatalf("Parse HCL Integration: Expected Package Image: %s | Received: %s", pImage, version.Image)
+		t.Fatalf("Parse HCL Integration: Expected pim Image: %s | Received: %s", pImage, version.Image)
 	}
 
-	//Ensure the package base directory is correct
+	//Ensure the pim base directory is correct
 	if p.BaseDir != pBD {
-		t.Fatalf("ParseHCL Integration: Expected Package BaseDir: %s | Received: %s", pBD, p.BaseDir)
+		t.Fatalf("ParseHCL Integration: Expected pim BaseDir: %s | Received: %s", pBD, p.BaseDir)
 	}
 
-	//Ensure the package port is correct
+	//Ensure the pim port is correct
 	if version.Port != pPort {
-		t.Fatalf("ParseHCL Integration: Expected Package Port: %s | Received: %s", pPort, version.Port)
+		t.Fatalf("ParseHCL Integration: Expected pim Port: %s | Received: %s", pPort, version.Port)
 	}
 
 	//Ensure the volumes length matches
 	if len(version.Volumes) != vLen {
-		t.Fatalf("ParseHCL Integration: Expected Package Volumes Len: %d | Received: %d", vLen, len(version.Volumes))
+		t.Fatalf("ParseHCL Integration: Expected pim Volumes Len: %d | Received: %d", vLen, len(version.Volumes))
 	}
 
 	vols := version.Volumes
 
 	//Ensure the first volume path matches
 	if vols[0].Path != v1Path {
-		t.Fatalf("ParseHCL Integration: Expected Package Volume 1 Path: %s | Received: %s", v1Path, vols[0].Path)
+		t.Fatalf("ParseHCL Integration: Expected pim Volume 1 Path: %s | Received: %s", v1Path, vols[0].Path)
 	}
 
 	//Ensure the first volume mount path matches
 	if vols[0].Mount != v1Mount {
-		t.Fatalf("ParseHCL Integration: Expected Package Volume 1 Mount: %s | Received: %s", v1Mount, vols[0].Mount)
+		t.Fatalf("ParseHCL Integration: Expected pim Volume 1 Mount: %s | Received: %s", v1Mount, vols[0].Mount)
 	}
 
 	//Ensure the second volume path matches
 	if vols[1].Path != v2Path {
-		t.Fatalf("ParseHCL Integration: Expected Package Volume 2 Path: %s | Received: %s", v2Path, vols[1].Path)
+		t.Fatalf("ParseHCL Integration: Expected pim Volume 2 Path: %s | Received: %s", v2Path, vols[1].Path)
 	}
 
 	//Ensure the second volume mount matches
 	if vols[1].Mount != v2Mount {
-		t.Fatalf("ParseHCL Integration: Expected Package Volume 2 Mount: %s | Received: %s", v2Mount, vols[1].Mount)
+		t.Fatalf("ParseHCL Integration: Expected pim Volume 2 Mount: %s | Received: %s", v2Mount, vols[1].Mount)
 	}
 
 	//Ensure the copies length matches
 	if len(version.Copies) != cpLen {
-		t.Fatalf("ParseHCL Integration: Expected Package Copies Len: %d | Received: %d", cpLen, len(version.Copies))
+		t.Fatalf("ParseHCL Integration: Expected pim Copies Len: %d | Received: %d", cpLen, len(version.Copies))
 	}
 
 	cp := version.Copies[0]
 
 	//Ensure the copy source matches
 	if cp.Source != cpSource {
-		t.Fatalf("ParseHCL Integration: Expected Package Copy Source: %s | Received: %s", cpSource, cp.Source)
+		t.Fatalf("ParseHCL Integration: Expected pim Copy Source: %s | Received: %s", cpSource, cp.Source)
 	}
 
 	//Ensure the copy dest matches
 	if cp.Dest != cpDest {
-		t.Fatalf("ParseHCL Integration: Expected Package Copy Dest: %s | Received: %s", cpDest, cp.Dest)
+		t.Fatalf("ParseHCL Integration: Expected pim Copy Dest: %s | Received: %s", cpDest, cp.Dest)
 	}
 
 }

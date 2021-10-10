@@ -50,15 +50,15 @@ func TestRunInit(t *testing.T) {
 	}
 
 	if rc.name != args[0] {
-		t.Fatal("Package Name should have been initialized as: " + args[0] + " but is: " + rc.name)
+		t.Fatal("pim Name should have been initialized as: " + args[0] + " but is: " + rc.name)
 	}
 }
 
-//Test the Run subcommand with no package specified
+//Test the Run subcommand with no pim specified
 func TestRunNoPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	expectedErr := "No package name was found. You must include the name of the package you wish to run."
+	expectedErr := "No pim name was found. You must include the name of the pim you wish to run."
 
 	config := utils.Config{
 		BaseDir:   "./",
@@ -82,7 +82,7 @@ func TestRunNoPackage(t *testing.T) {
 	}
 }
 
-//Test the Run subcommand with a non existent package specified
+//Test the Run subcommand with a non existent pim specified
 func TestRunNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -97,7 +97,7 @@ func TestRunNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
+	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim list"
 
 	err := rc.Init(args)
 
@@ -143,7 +143,7 @@ func TestRunImageNotExist(t *testing.T) {
 
 	args := []string{"python"}
 
-	expectedErr := "Package python with version 'latest' is not installed. You must install the package before running it."
+	expectedErr := "pim python with version 'latest' is not installed. You must install the pim before running it."
 
 	err := rc.Init(args)
 
@@ -224,13 +224,13 @@ func TestRunFlowNoRunArgs(t *testing.T) {
 		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
 	}
 
-	//Make sure the image that was ran matches the package image
-	if mu.RunImage != mu.Pack.Packages[0].Versions[0].Image {
-		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pack.Packages[0].Versions[0].Image)
+	//Make sure the image that was ran matches the pim image
+	if mu.RunImage != mu.Pim.Pims[0].Versions[0].Image {
+		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pim.Pims[0].Versions[0].Image)
 	}
 
-	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pack.Packages[0].Versions[0].Port}
-	volume := []string{ed + mu.Pack.Packages[0].Versions[0].Volumes[0].Path + ":" + mu.Pack.Packages[0].Versions[0].Volumes[0].Mount}
+	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pim.Pims[0].Versions[0].Port}
+	volume := []string{ed + mu.Pim.Pims[0].Versions[0].Volumes[0].Path + ":" + mu.Pim.Pims[0].Versions[0].Volumes[0].Mount}
 
 	//Make sure the ports passed in matches
 	if !reflect.DeepEqual(mu.RunPorts, port) {
@@ -303,13 +303,13 @@ func TestRunFlowRunArgs(t *testing.T) {
 		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
 	}
 
-	//Make sure the image that was ran matches the package image
-	if mu.RunImage != mu.Pack.Packages[0].Versions[0].Image {
-		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pack.Packages[0].Versions[0].Image)
+	//Make sure the image that was ran matches the pim image
+	if mu.RunImage != mu.Pim.Pims[0].Versions[0].Image {
+		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pim.Pims[0].Versions[0].Image)
 	}
 
-	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pack.Packages[0].Versions[0].Port}
-	volume := []string{ed + mu.Pack.Packages[0].Versions[0].Volumes[0].Path + ":" + mu.Pack.Packages[0].Versions[0].Volumes[0].Mount}
+	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pim.Pims[0].Versions[0].Port}
+	volume := []string{ed + mu.Pim.Pims[0].Versions[0].Volumes[0].Path + ":" + mu.Pim.Pims[0].Versions[0].Volumes[0].Mount}
 
 	//Make sure the ports passed in matches
 	if !reflect.DeepEqual(mu.RunPorts, port) {
@@ -514,7 +514,7 @@ func TestRunErrorAtRunContainer(t *testing.T) {
 	}
 }
 
-//Test the Run subcommand with a package with a nonexistent version specified
+//Test the Run subcommand with a pim with a nonexistent version specified
 func TestRunNonExistVersion(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -529,7 +529,7 @@ func TestRunNonExistVersion(t *testing.T) {
 
 	args := []string{"python:idontexist"}
 
-	expectedErr := "Could not find package python with version 'idontexist' in the package list"
+	expectedErr := "Could not find pim python with version 'idontexist' in the pim list"
 
 	err := rc.Init(args)
 

@@ -20,7 +20,7 @@ type MockUtility struct {
 	Calls []string
 
 	//Package object that can be changed for different tests
-	Pack PackageHCLUtil
+	Pim PimHCLUtil
 
 	//Config Object that can be changed for different tests
 	Conf Config
@@ -86,8 +86,8 @@ type MockUtility struct {
 //Create a new Mock Utility and set any default variables
 func NewMockUtility() *MockUtility {
 	mu := &MockUtility{
-		Pack: PackageHCLUtil{
-			Packages: []Package{
+		Pim: PimHCLUtil{
+			Pims: []PackageImage{
 				{
 					Name:    "python",
 					BaseDir: "/base",
@@ -186,8 +186,8 @@ func (mu *MockUtility) ParseBody(body hcl.Body, out interface{}) (interface{}, e
 	switch out.(type) {
 	default:
 		return nil, errors.New("Unexpected type in parse")
-	case PackageHCLUtil:
-		return mu.Pack, nil
+	case PimHCLUtil:
+		return mu.Pim, nil
 	case Config:
 		return mu.Conf, nil
 	}

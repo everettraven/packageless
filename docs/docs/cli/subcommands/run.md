@@ -5,10 +5,10 @@ title: run
 
 ## Usage
 ```
-packageless run [PACKAGE]
+packageless run [pim]
 ```
 
-When using this subcommand, **packageless** will run the package that is specified as long as it is installed. If the package is not installed the command will exit with text stating that the package specified is not installed. If you installed a specific version of a package, you will need to use the same syntax for the package for this command as well.
+When using this subcommand, **packageless** will run the pim that is specified as long as it is installed. If the pim is not installed the command will exit with text stating that the pim specified is not installed. If you installed a specific version of a pim, you will need to use the same syntax for the pim for this command as well.
 
 ## Examples
 :::note

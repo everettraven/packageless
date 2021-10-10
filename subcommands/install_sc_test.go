@@ -53,7 +53,7 @@ func TestInstallInit(t *testing.T) {
 	}
 
 	if ic.name != args[0] {
-		t.Fatal("Package Name should have been initialized as: " + args[0] + " but is: " + ic.name)
+		t.Fatal("pim Name should have been initialized as: " + args[0] + " but is: " + ic.name)
 	}
 }
 
@@ -128,25 +128,25 @@ func TestInstallFlow(t *testing.T) {
 	var aliasCmds []string
 
 	//Fill lists
-	for _, pack := range mu.Pack.Packages {
+	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
-		version := pack.Versions[0]
+		version := pim.Versions[0]
 		images = append(images, version.Image)
-		mkdirs = append(mkdirs, ed+pack.BaseDir)
-		aliasCmds = append(aliasCmds, pack.Name)
+		mkdirs = append(mkdirs, ed+pim.BaseDir)
+		aliasCmds = append(aliasCmds, pim.Name)
 
-		//Loop through volumes in the package
+		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
 			mkdirs = append(mkdirs, ed+vol.Path)
 		}
 
-		//Loop through the copies in the package
+		//Loop through the copies in the pim
 		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
 		}
 
-		//Just use the first package
+		//Just use the first pim
 		break
 	}
 
@@ -652,7 +652,7 @@ func TestInstallImageExists(t *testing.T) {
 
 	mu.ImgExist = true
 
-	expectedErr := "Package python is already installed"
+	expectedErr := "pim python is already installed"
 
 	mcp := &utils.MockCopyTool{}
 
@@ -699,7 +699,7 @@ func TestInstallImageExists(t *testing.T) {
 func TestInstallNoPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	expectedErr := "No package name was found. You must include the name of the package you wish to install."
+	expectedErr := "No pim name was found. You must include the name of the pim you wish to install."
 
 	mcp := &utils.MockCopyTool{}
 
@@ -725,7 +725,7 @@ func TestInstallNoPackage(t *testing.T) {
 	}
 }
 
-//Test the install subcommand if the passed in package does not exist
+//Test the install subcommand if the passed in pim does not exist
 func TestInstallNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -742,7 +742,7 @@ func TestInstallNonExistPackage(t *testing.T) {
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find package nonexistent with version 'latest' in the package list"
+	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim list"
 
 	err := ic.Init(args)
 
@@ -838,24 +838,24 @@ func TestInstallAliasFalse(t *testing.T) {
 	var mkdirs []string
 
 	//Fill lists
-	for _, pack := range mu.Pack.Packages {
+	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
-		version := pack.Versions[0]
+		version := pim.Versions[0]
 		images = append(images, version.Image)
-		mkdirs = append(mkdirs, ed+pack.BaseDir)
+		mkdirs = append(mkdirs, ed+pim.BaseDir)
 
-		//Loop through volumes in the package
+		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
 			mkdirs = append(mkdirs, ed+vol.Path)
 		}
 
-		//Loop through the copies in the package
+		//Loop through the copies in the pim
 		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
 			copyDests = append(copyDests, ed+copy.Dest)
 		}
 
-		//Just use the first package
+		//Just use the first pim
 		break
 	}
 
@@ -896,7 +896,7 @@ func TestInstallAliasFalse(t *testing.T) {
 
 }
 
-//Test the install function with a nonexistent package version
+//Test the install function with a nonexistent pim version
 func TestInstallNonExistVersion(t *testing.T) {
 	mu := utils.NewMockUtility()
 
@@ -913,7 +913,7 @@ func TestInstallNonExistVersion(t *testing.T) {
 
 	args := []string{"python:idontexist"}
 
-	expectedErr := "Could not find package python with version 'idontexist' in the package list"
+	expectedErr := "Could not find pim python with version 'idontexist' in the pim list"
 
 	err := ic.Init(args)
 

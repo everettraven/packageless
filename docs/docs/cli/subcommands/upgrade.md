@@ -5,21 +5,21 @@ title: upgrade
 
 ## Usage
 ```
-packageless upgrade [OPTIONAL: PACKAGE]
+packageless upgrade [OPTIONAL: PIM]
 ```
 
-This subcommand will upgrade the package with the current package information in the package list as long as the package is already installed. If a package is not specified it will upgrade all installed packages.
+This subcommand will upgrade the pim with the current pim information in the pim list as long as the pim is already installed. If a pim is not specified it will upgrade all installed packages.
 
-Packages follow a particular format. If you specify just the package that you want upgraded, the latest version of the package that **packageless** has will be upgraded.
+Packages follow a particular format. If you specify just the pim that you want upgraded, the latest version of the pim that **packageless** has will be upgraded.
 
 You can also specify a particular version by following this format:
 ```
-package:version
+pim:version
 ```
 
 To manually specify that you want the latest version you can use:
 ```
-package:latest
+pim:latest
 ```
 however, **packageless** defaults to getting the latest version if one is not specified
 
