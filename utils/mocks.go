@@ -98,14 +98,14 @@ func NewMockUtility() *MockUtility {
 
 							Volumes: []Volume{
 								{
-									Path:  "/a/path",
+									Path:  "a/path",
 									Mount: "/another/one",
 								},
 							},
 							Copies: []*Copy{
 								{
 									Source: "/source/path",
-									Dest:   "/destination",
+									Dest:   "destination",
 								},
 							},
 							Port: "3000",
@@ -336,6 +336,32 @@ func (mu *MockUtility) RemoveAliasUnix(name string, ed string) error {
 	mu.CmdToAlias = append(mu.CmdToAlias, name)
 
 	if mu.ErrorAt == "RemoveAlias" {
+		return errors.New(mu.ErrorMsg)
+	}
+
+	return nil
+}
+
+func (mu *MockUtility) FetchPimConfig(baseUrl string, pimName string, savePath string) error {
+	mu.Calls = append(mu.Calls, "FetchPimConfig")
+
+	if mu.ErrorAt == "FetchPimConfig" {
+		return errors.New(mu.ErrorMsg)
+	}
+
+	return nil
+}
+
+func (mu *MockUtility) FileExists(path string) bool {
+	mu.Calls = append(mu.Calls, "FileExists")
+
+	return true
+}
+
+func (mu *MockUtility) RemoveFile(path string) error {
+	mu.Calls = append(mu.Calls, "RemoveFile")
+
+	if mu.ErrorAt == "RemoveFile" {
 		return errors.New(mu.ErrorMsg)
 	}
 

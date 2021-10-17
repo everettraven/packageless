@@ -4,8 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -77,23 +75,26 @@ func (ic *InstallCommand) Run() error {
 		pimVersion = "latest"
 	}
 
+	pimConfigDir := ic.config.BaseDir + ic.config.PimsConfigDir
+	pimPath := pimConfigDir + pimName + ".hcl"
+
+	pimDir := ic.config.BaseDir + ic.config.PimsDir
+
+	//Check if pim config already exists
+	if !ic.tools.FileExists(pimPath) {
+		err := ic.tools.FetchPimConfig(ic.config.RepositoryHost, pimName, pimConfigDir)
+		if err != nil {
+			return err
+		}
+	}
+
 	//Create the Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
 	}
 
-	//Create a variable for the executable directory
-	ex, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	ed := filepath.Dir(ex)
-
-	//Default location of the pim list
-	pimList := ed + "/package_list.hcl"
-
-	pimListBody, err := ic.tools.GetHCLBody(pimList)
+	pimListBody, err := ic.tools.GetHCLBody(pimPath)
 
 	if err != nil {
 		return err
@@ -154,7 +155,7 @@ func (ic *InstallCommand) Run() error {
 	fmt.Println("Creating pim directories")
 
 	//Create the base directory for the pim
-	err = ic.tools.MakeDir(ed + pim.BaseDir)
+	err = ic.tools.MakeDir(pimDir + pim.BaseDir)
 
 	if err != nil {
 		return err
@@ -164,7 +165,7 @@ func (ic *InstallCommand) Run() error {
 	for _, vol := range version.Volumes {
 		//Make sure that a path is given. If not we already assume that the working directory will be mounted
 		if vol.Path != "" {
-			err = ic.tools.MakeDir(ed + vol.Path)
+			err = ic.tools.MakeDir(pimDir + vol.Path)
 
 			if err != nil {
 				return err
@@ -186,7 +187,7 @@ func (ic *InstallCommand) Run() error {
 		fmt.Println("Copying necessary files 2/3")
 		//Copy the files from the container to the locations
 		for _, copy := range version.Copies {
-			err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
+			err = ic.tools.CopyFromContainer(copy.Source, pimDir+copy.Dest, containerID, cli, ic.cp)
 
 			if err != nil {
 				return err
@@ -209,15 +210,15 @@ func (ic *InstallCommand) Run() error {
 
 		if runtime.GOOS == "windows" {
 			if version.Version != "latest" {
-				err = ic.tools.AddAliasWin(pim.Name+":"+version.Version, ed)
+				err = ic.tools.AddAliasWin(pim.Name+":"+version.Version, pimDir)
 			} else {
-				err = ic.tools.AddAliasWin(pim.Name, ed)
+				err = ic.tools.AddAliasWin(pim.Name, pimDir)
 			}
 		} else {
 			if version.Version != "latest" {
-				err = ic.tools.AddAliasUnix(pim.Name+":"+version.Version, ed)
+				err = ic.tools.AddAliasUnix(pim.Name+":"+version.Version, pimDir)
 			} else {
-				err = ic.tools.AddAliasUnix(pim.Name, ed)
+				err = ic.tools.AddAliasUnix(pim.Name, pimDir)
 			}
 		}
 

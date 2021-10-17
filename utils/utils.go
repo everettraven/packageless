@@ -3,7 +3,9 @@ package utils
 import (
 	"archive/tar"
 	"context"
+	"errors"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -44,6 +46,9 @@ type Tools interface {
 	RemoveAliasWin(name string, ed string) error
 	AddAliasUnix(name string, ed string) error
 	RemoveAliasUnix(name string, ed string) error
+	FetchPimConfig(baseUrl string, pimName string, savePath string) error
+	FileExists(path string) bool
+	RemoveFile(path string) error
 }
 
 //Utility Tool struct with its functions
@@ -94,6 +99,30 @@ func (u *Utility) OpenFile(path string) (*os.File, error) {
 	return file, nil
 }
 
+//OverwriteFile opens the specified file with overwrite mode, creating it if it does not exist
+func (u *Utility) OverwriteFile(path string) (*os.File, error) {
+	var file *os.File
+	//Check if the path exists
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			//Create the file
+			file, err = os.Create(path)
+
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		//Open the file
+		file, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return file, nil
+}
+
 //RemoveDir removes the specified directory
 func (u *Utility) RemoveDir(path string) error {
 	if _, err := os.Stat(path); err != nil {
@@ -104,6 +133,10 @@ func (u *Utility) RemoveDir(path string) error {
 		}
 	} else {
 		err = os.RemoveAll(path)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -136,6 +169,70 @@ func (u *Utility) UpgradeDir(path string) error {
 			return err
 		}
 	}
+	return nil
+}
+
+//FetchPimConfig will get download the latest pim configuration for specified pim
+func (u *Utility) FetchPimConfig(baseUrl string, pimName string, savePath string) error {
+	pimFile := pimName + ".hcl"
+	url := baseUrl + pimFile
+	resp, err := http.Get(url)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return errors.New("Could not find pim configuration for pim: " + pimName)
+	}
+
+	defer resp.Body.Close()
+
+	file, err := u.OverwriteFile(savePath + "/" + pimFile)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(file, resp.Body)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//FileExists - checks to see if a file exists
+func (u *Utility) FileExists(path string) bool {
+	returnVal := false
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			returnVal = false
+		}
+	} else {
+		returnVal = true
+	}
+
+	return returnVal
+}
+
+//RemoveFile - will delete the file at the specified path
+func (u *Utility) RemoveFile(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		err = os.Remove(path)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

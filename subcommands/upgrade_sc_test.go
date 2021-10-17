@@ -15,7 +15,17 @@ func TestUpgradeName(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	if ic.Name() != "upgrade" {
 		t.Fatal("The Upgrade subcommand's name should be: upgrade | Subcommand Name: " + ic.Name())
@@ -28,7 +38,17 @@ func TestUpgradeInit(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -60,7 +80,17 @@ func TestUpgradeFlow(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -78,6 +108,7 @@ func TestUpgradeFlow(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -169,7 +200,17 @@ func TestUpgradeErrorAtGetHCLBody(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -191,6 +232,7 @@ func TestUpgradeErrorAtGetHCLBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 	}
 
@@ -210,7 +252,17 @@ func TestUpgradeErrorAtParseBody(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -232,6 +284,7 @@ func TestUpgradeErrorAtParseBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 	}
@@ -252,7 +305,17 @@ func TestUpgradeErrorAtImageExists(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -274,6 +337,7 @@ func TestUpgradeErrorAtImageExists(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -295,7 +359,17 @@ func TestUpgradeErrorAtPullImage(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -317,6 +391,7 @@ func TestUpgradeErrorAtPullImage(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -339,7 +414,17 @@ func TestUpgradeErrorAtUpgradeDir(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -361,6 +446,7 @@ func TestUpgradeErrorAtUpgradeDir(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -384,7 +470,17 @@ func TestUpgradeErrorAtCreateContainer(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -406,6 +502,7 @@ func TestUpgradeErrorAtCreateContainer(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -430,7 +527,17 @@ func TestUpgradeErrorAtCopyFromContainer(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -452,6 +559,7 @@ func TestUpgradeErrorAtCopyFromContainer(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -477,7 +585,17 @@ func TestUpgradeErrorAtRemoveContainer(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python"}
 
@@ -499,6 +617,7 @@ func TestUpgradeErrorAtRemoveContainer(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -526,7 +645,17 @@ func TestUpgradeImageNotExists(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	err := ic.Init(args)
 
@@ -546,6 +675,7 @@ func TestUpgradeImageNotExists(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -569,7 +699,7 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 				Image:   "packageless/pim",
 				Volumes: []utils.Volume{
 					{
-						Path:  "/pim/config/",
+						Path:  "pim/config/",
 						Mount: "/pim/config_data/",
 					},
 				},
@@ -580,22 +710,23 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 	mu.ImgExist = true
 
-	//Get the executable directory
-	ex, err := os.Executable()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ed := filepath.Dir(ex)
-
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{}
 
-	err = ic.Init(args)
+	err := ic.Init(args)
 
 	if err != nil {
 		t.Fatal(err)
@@ -646,13 +777,13 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
-			updirs = append(updirs, ed+vol.Path)
+			updirs = append(updirs, config.BaseDir+config.PimsDir+vol.Path)
 		}
 
 		//Loop through the copies in the pim
 		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
-			copyDests = append(copyDests, ed+copy.Dest)
+			copyDests = append(copyDests, config.BaseDir+config.PimsDir+copy.Dest)
 		}
 
 	}
@@ -700,7 +831,17 @@ func TestUpgradeNonExistPackage(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"nonexistent"}
 
@@ -724,6 +865,7 @@ func TestUpgradeNonExistPackage(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 	}
@@ -739,7 +881,17 @@ func TestUpgradeNonExistVersion(t *testing.T) {
 
 	mcp := &utils.MockCopyTool{}
 
-	ic := NewUpgradeCommand(mu, mcp)
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
 
 	args := []string{"python:idontexist"}
 
@@ -763,6 +915,7 @@ func TestUpgradeNonExistVersion(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 	}

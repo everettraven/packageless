@@ -16,7 +16,10 @@ func TestParseBodyConfig(t *testing.T) {
 	hcl := []byte(`base_dir="./"
 	start_port=3000
 	port_increment=1
-	alias=true`)
+	alias=true
+	repository_host="host.com"
+	pims_config_dir="pims_config"
+	pims_dir = "pims"`)
 
 	//Create the parser
 	parser := hclparse.NewParser()

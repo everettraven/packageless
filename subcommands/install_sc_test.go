@@ -16,10 +16,13 @@ func TestInstallName(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -36,10 +39,13 @@ func TestInstallInit(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -73,10 +79,13 @@ func TestInstallFlow(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -97,6 +106,7 @@ func TestInstallFlow(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -201,10 +211,13 @@ func TestInstallErrorAtGetHCLBody(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -247,10 +260,13 @@ func TestInstallErrorAtParseBody(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -294,10 +310,13 @@ func TestInstallErrorAtImageExists(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -342,10 +361,13 @@ func TestInstallErrorAtPullImage(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -391,10 +413,13 @@ func TestInstallErrorAtMakeDir(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -441,10 +466,13 @@ func TestInstallErrorAtCreateContainer(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -493,10 +521,13 @@ func TestInstallErrorAtCopyFromContainer(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -546,10 +577,13 @@ func TestInstallErrorAtRemoveContainer(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -600,10 +634,13 @@ func TestInstallErrorAtAddAlias(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -657,10 +694,13 @@ func TestInstallImageExists(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -704,10 +744,13 @@ func TestInstallNoPackage(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -732,10 +775,13 @@ func TestInstallNonExistPackage(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -787,10 +833,13 @@ func TestInstallAliasFalse(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     false,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          false,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
@@ -903,10 +952,13 @@ func TestInstallNonExistVersion(t *testing.T) {
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	ic := NewInstallCommand(mu, mcp, config)
