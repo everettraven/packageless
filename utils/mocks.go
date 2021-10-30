@@ -81,6 +81,9 @@ type MockUtility struct {
 
 	//Keep track of the alias data
 	CmdToAlias []string
+
+	//Should the Pim Configuration file exist?
+	PimConfigShouldExist bool
 }
 
 //Create a new Mock Utility and set any default variables
@@ -355,7 +358,7 @@ func (mu *MockUtility) FetchPimConfig(baseUrl string, pimName string, savePath s
 func (mu *MockUtility) FileExists(path string) bool {
 	mu.Calls = append(mu.Calls, "FileExists")
 
-	return true
+	return mu.PimConfigShouldExist
 }
 
 func (mu *MockUtility) RemoveFile(path string) error {
