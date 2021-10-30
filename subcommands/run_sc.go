@@ -82,7 +82,7 @@ func (rc *RunCommand) Run() error {
 		return err
 	}
 
-	pimDir := rc.config.BaseDir + rc.config.PimsDir
+	pimDir := rc.config.BaseDir + rc.config.PimsConfigDir
 
 	//Default location of the pim list
 	pimList := pimDir + pimName + ".hcl"
