@@ -82,7 +82,7 @@ type MockUtility struct {
 	//Keep track of the alias data
 	CmdToAlias []string
 
-	//Should the Pim Configuration file exist?
+	//Should the Pim Configuration file exist
 	PimConfigShouldExist bool
 }
 
@@ -118,13 +118,18 @@ func NewMockUtility() *MockUtility {
 			},
 		},
 		Conf: Config{
-			BaseDir:   "/base",
-			StartPort: 3000,
-			PortInc:   1,
+			BaseDir:        "~/.packageless/",
+			StartPort:      3000,
+			PortInc:        1,
+			Alias:          true,
+			RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+			PimsConfigDir:  "pims_config/",
+			PimsDir:        "pims/",
 		},
-		HCLBody:     hcl.EmptyBody(),
-		ErrorMsg:    "Testing for error handling",
-		ContainerID: "FakeContainer123",
+		HCLBody:              hcl.EmptyBody(),
+		ErrorMsg:             "Testing for error handling",
+		ContainerID:          "FakeContainer123",
+		PimConfigShouldExist: true,
 	}
 
 	return mu
