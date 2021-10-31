@@ -128,6 +128,8 @@ func TestRunNonExistPackage(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"FileExists",
+		"GetHCLBody",
+		"ParseBody",
 	}
 
 	if !reflect.DeepEqual(callStack, mu.Calls) {

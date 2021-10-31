@@ -1,8 +1,6 @@
 package subcommands
 
 import (
-	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -14,10 +12,13 @@ func TestUninstallName(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -32,10 +33,13 @@ func TestUninstallInit(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -60,10 +64,13 @@ func TestUninstallNoPackage(t *testing.T) {
 	expectedErr := "No pim name was found. You must include the name of the pim you wish to uninstall."
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -86,17 +93,20 @@ func TestUninstallNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim list"
+	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim configuration"
 
 	err := uc.Init(args)
 
@@ -116,6 +126,7 @@ func TestUninstallNonExistPackage(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 	}
@@ -132,10 +143,13 @@ func TestUninstallImageNotExist(t *testing.T) {
 	mu.ImgExist = false
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -162,6 +176,7 @@ func TestUninstallImageNotExist(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -178,27 +193,21 @@ func TestUninstallFlow(t *testing.T) {
 
 	mu.ImgExist = true
 
-	//Get the executable directory
-	ex, err := os.Executable()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ed := filepath.Dir(ex)
-
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python"}
 
-	err = uc.Init(args)
+	err := uc.Init(args)
 
 	if err != nil {
 		t.Fatal(err)
@@ -212,6 +221,7 @@ func TestUninstallFlow(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -219,6 +229,7 @@ func TestUninstallFlow(t *testing.T) {
 		"RemoveDir",
 		"RemoveImage",
 		"RemoveAlias",
+		"RemoveFile",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -235,6 +246,8 @@ func TestUninstallFlow(t *testing.T) {
 	//commands that should have had their aliases removed
 	var aliasCmds []string
 
+	pimDir := config.BaseDir + config.PimsDir
+
 	//Fill lists
 	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
@@ -244,10 +257,10 @@ func TestUninstallFlow(t *testing.T) {
 
 		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
-			rmdirs = append(rmdirs, ed+vol.Path)
+			rmdirs = append(rmdirs, pimDir+vol.Path)
 		}
 
-		rmdirs = append(rmdirs, ed+pim.BaseDir)
+		rmdirs = append(rmdirs, pimDir+pim.BaseDir)
 		//Just use the first pim for the test
 		break
 	}
@@ -277,10 +290,13 @@ func TestUninstallErrorAtGetHCLBody(t *testing.T) {
 	mu.ErrorAt = "GetHCLBody"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -305,6 +321,7 @@ func TestUninstallErrorAtGetHCLBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 	}
 
@@ -351,6 +368,7 @@ func TestUninstallErrorAtParseBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 	}
@@ -369,10 +387,13 @@ func TestUninstallErrorAtImageExists(t *testing.T) {
 	mu.ErrorAt = "ImageExists"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -397,6 +418,7 @@ func TestUninstallErrorAtImageExists(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -416,10 +438,13 @@ func TestUninstallErrorAtRemoveDir(t *testing.T) {
 	mu.ErrorAt = "RemoveDir"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -444,6 +469,7 @@ func TestUninstallErrorAtRemoveDir(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -464,10 +490,13 @@ func TestUninstallErrorAtRemoveAlias(t *testing.T) {
 	mu.ErrorAt = "RemoveAlias"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -492,6 +521,7 @@ func TestUninstallErrorAtRemoveAlias(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -515,10 +545,13 @@ func TestUninstallErrorAtRemoveImage(t *testing.T) {
 	mu.ErrorAt = "RemoveImage"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
@@ -543,6 +576,7 @@ func TestUninstallErrorAtRemoveImage(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -562,15 +596,6 @@ func TestUninstallAliasFalse(t *testing.T) {
 
 	mu.ImgExist = true
 
-	//Get the executable directory
-	ex, err := os.Executable()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ed := filepath.Dir(ex)
-
 	config := utils.Config{
 		BaseDir:   "./",
 		PortInc:   1,
@@ -582,7 +607,7 @@ func TestUninstallAliasFalse(t *testing.T) {
 
 	args := []string{"python"}
 
-	err = uc.Init(args)
+	err := uc.Init(args)
 
 	if err != nil {
 		t.Fatal(err)
@@ -596,12 +621,14 @@ func TestUninstallAliasFalse(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
 		"RemoveDir",
 		"RemoveDir",
 		"RemoveImage",
+		"RemoveFile",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -615,6 +642,8 @@ func TestUninstallAliasFalse(t *testing.T) {
 	//directories to be removed
 	var rmdirs []string
 
+	pimDir := config.BaseDir + config.PimsDir
+
 	//Fill lists
 	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
@@ -623,10 +652,10 @@ func TestUninstallAliasFalse(t *testing.T) {
 
 		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
-			rmdirs = append(rmdirs, ed+vol.Path)
+			rmdirs = append(rmdirs, pimDir+vol.Path)
 		}
 
-		rmdirs = append(rmdirs, ed+pim.BaseDir)
+		rmdirs = append(rmdirs, pimDir+pim.BaseDir)
 
 		//Just use the first pim
 		break
@@ -648,17 +677,20 @@ func TestUninstallNonExistVersion(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 5000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	uc := NewUninstallCommand(mu, config)
 
 	args := []string{"python:idontexist"}
 
-	expectedErr := "Could not find pim python with version 'idontexist' in the pim list"
+	expectedErr := "Could not find pim python with version 'idontexist' in the pim configuration"
 
 	err := uc.Init(args)
 
@@ -678,8 +710,56 @@ func TestUninstallNonExistVersion(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
+
+func TestUninstallPimConfigFileNotExist(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	mu.PimConfigShouldExist = false
+
+	uc := NewUninstallCommand(mu, config)
+
+	args := []string{"python:idontexist"}
+
+	expectedErr := "configuration for pim: python could not be found. Have you installed python?"
+
+	err := uc.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = uc.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"FileExists",
 	}
 
 	if !reflect.DeepEqual(callStack, mu.Calls) {

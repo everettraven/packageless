@@ -82,10 +82,10 @@ func (rc *RunCommand) Run() error {
 		return err
 	}
 
-	pimDir := rc.config.BaseDir + rc.config.PimsConfigDir
+	pimConfigDir := rc.config.BaseDir + rc.config.PimsConfigDir
 
 	//Default location of the pim list
-	pimList := pimDir + pimName + ".hcl"
+	pimList := pimConfigDir + pimName + ".hcl"
 
 	if !rc.tools.FileExists(pimList) {
 		return errors.New("Could not find a configuration file for '" + pimName + "' has it been installed?")
@@ -146,6 +146,8 @@ func (rc *RunCommand) Run() error {
 	var volumes []string
 
 	ports = append(ports, strconv.Itoa(rc.config.StartPort)+":"+version.Port)
+
+	pimDir := rc.config.BaseDir + rc.config.PimsDir
 
 	for _, vol := range version.Volumes {
 		if vol.Path != "" {

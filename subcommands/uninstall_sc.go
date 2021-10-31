@@ -127,7 +127,7 @@ func (uc *UninstallCommand) Run() error {
 
 	//Make sure we have found the pim in the pim list
 	if !found {
-		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim list")
+		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim configuration")
 	}
 
 	//Check if the corresponding pim is already Uninstalled
@@ -198,13 +198,13 @@ func (uc *UninstallCommand) Run() error {
 		if err != nil {
 			return err
 		}
+	}
 
-		fmt.Println("Removing pim configuration")
-		err = uc.tools.RemoveFile(pimPath)
+	fmt.Println("Removing pim configuration")
+	err = uc.tools.RemoveFile(pimPath)
 
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
 	return nil
