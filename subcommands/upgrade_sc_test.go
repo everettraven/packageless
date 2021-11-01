@@ -1,8 +1,6 @@
 package subcommands
 
 import (
-	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -69,15 +67,6 @@ func TestUpgradeFlow(t *testing.T) {
 
 	mu.ImgExist = true
 
-	//Get the executable directory
-	ex, err := os.Executable()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ed := filepath.Dir(ex)
-
 	mcp := &utils.MockCopyTool{}
 
 	config := utils.Config{
@@ -94,7 +83,7 @@ func TestUpgradeFlow(t *testing.T) {
 
 	args := []string{"python"}
 
-	err = ic.Init(args)
+	err := ic.Init(args)
 
 	if err != nil {
 		t.Fatal(err)
@@ -134,6 +123,8 @@ func TestUpgradeFlow(t *testing.T) {
 	//directories to be created
 	var updirs []string
 
+	pimDir := config.BaseDir + config.PimsDir
+
 	//Fill lists
 	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
@@ -142,13 +133,13 @@ func TestUpgradeFlow(t *testing.T) {
 
 		//Loop through volumes in the pim
 		for _, vol := range version.Volumes {
-			updirs = append(updirs, ed+vol.Path)
+			updirs = append(updirs, pimDir+vol.Path)
 		}
 
 		//Loop through the copies in the pim
 		for _, copy := range version.Copies {
 			copySources = append(copySources, copy.Source)
-			copyDests = append(copyDests, ed+copy.Dest)
+			copyDests = append(copyDests, pimDir+copy.Dest)
 		}
 
 	}
@@ -690,24 +681,6 @@ func TestUpgradeImageNotExists(t *testing.T) {
 func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 	mu := utils.NewMockUtility()
 
-	mu.Pim.Pims = append(mu.Pim.Pims, utils.PackageImage{
-		Name:    "pim",
-		BaseDir: "/pim",
-		Versions: []utils.Version{
-			{
-				Version: "latest",
-				Image:   "packageless/pim",
-				Volumes: []utils.Volume{
-					{
-						Path:  "pim/config/",
-						Mount: "/pim/config_data/",
-					},
-				},
-				Port: "4000",
-			},
-		},
-	})
-
 	mu.ImgExist = true
 
 	mcp := &utils.MockCopyTool{}
@@ -721,6 +694,8 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 		PimsConfigDir:  "pims_config/",
 		PimsDir:        "pims/",
 	}
+
+	mu.InstalledPims = []string{"python", "second"}
 
 	ic := NewUpgradeCommand(mu, mcp, config)
 
@@ -740,6 +715,7 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"GetListOfInstalledPimConfigs",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -748,10 +724,15 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 		"CreateContainer",
 		"CopyFromContainer",
 		"RemoveContainer",
+		//Repeat the cycle from GetHCLBody since we should be reading a new pim file
+		"GetHCLBody",
+		"ParseBody",
 		"ImageExists",
 		"PullImage",
 		"UpgradeDir",
-		//Second pim has no Copy fields so it should end at UpgradeDir
+		"CreateContainer",
+		"CopyFromContainer",
+		"RemoveContainer",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -771,21 +752,23 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 	//Fill lists
 	for _, pim := range mu.Pim.Pims {
-		//Just get the first version
-		version := pim.Versions[0]
-		images = append(images, version.Image)
+		//Since we are doing two packages we need to repeat this loop a second time
+		for i := 0; i < 2; i++ {
+			//Just get the first version
+			version := pim.Versions[0]
+			images = append(images, version.Image)
 
-		//Loop through volumes in the pim
-		for _, vol := range version.Volumes {
-			updirs = append(updirs, config.BaseDir+config.PimsDir+vol.Path)
+			//Loop through volumes in the pim
+			for _, vol := range version.Volumes {
+				updirs = append(updirs, config.BaseDir+config.PimsDir+vol.Path)
+			}
+
+			//Loop through the copies in the pim
+			for _, copy := range version.Copies {
+				copySources = append(copySources, copy.Source)
+				copyDests = append(copyDests, config.BaseDir+config.PimsDir+copy.Dest)
+			}
 		}
-
-		//Loop through the copies in the pim
-		for _, copy := range version.Copies {
-			copySources = append(copySources, copy.Source)
-			copyDests = append(copyDests, config.BaseDir+config.PimsDir+copy.Dest)
-		}
-
 	}
 
 	//If the pulled images doesn't match the test fails
@@ -799,8 +782,8 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 	}
 
 	//Make sure that the image passed into the CreateContainer function is correct
-	if !reflect.DeepEqual(mu.CreateImages, images[:1]) {
-		t.Fatalf("CreateContainer images does not match the expected images. Images: %v | Expected Images: %v", mu.CreateImages, images[:1])
+	if !reflect.DeepEqual(mu.CreateImages, images) {
+		t.Fatalf("CreateContainer images does not match the expected images. Images: %v | Expected Images: %v", mu.CreateImages, images)
 	}
 
 	//Make sure the proper ContainerID is being passed into the CopyFromContainer function
@@ -821,6 +804,12 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 	//Ensure that the ContainerID is passed correctly to the RemoveContainer function
 	if mu.RemoveContainerID != mu.ContainerID {
 		t.Fatalf("RemoveContainer ContainerID does not match the expected ContainerID. ContainerID: %s | Expected ContainerID: %s", mu.RemoveContainerID, mu.ContainerID)
+	}
+
+	pimConfigDir := config.BaseDir + config.PimsConfigDir
+	//Make sure we are getting the correct pim config dir passed in
+	if mu.PimConfigDir != pimConfigDir {
+		t.Fatalf("The pim configuration directory was: %s | Expected: %s", mu.PimConfigDir, pimConfigDir)
 	}
 
 }
@@ -918,6 +907,54 @@ func TestUpgradeNonExistVersion(t *testing.T) {
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
+
+func TestUpgradeErrorAtGetListOfInstalledPimConfigs(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	mcp := &utils.MockCopyTool{}
+
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	mu.ErrorAt = "GetListOfInstalledPimConfigs"
+	mu.ErrorMsg = "error message"
+
+	ic := NewUpgradeCommand(mu, mcp, config)
+
+	expectedErr := "Encountered an error while trying to fetch list of installed pim configuration files: " + mu.ErrorMsg
+
+	err := ic.Init([]string{})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = ic.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"GetListOfInstalledPimConfigs",
 	}
 
 	if !reflect.DeepEqual(callStack, mu.Calls) {

@@ -4,8 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
 	"strings"
 
 	"github.com/docker/docker/client"
@@ -198,17 +196,11 @@ func (ic *UpgradeCommand) Run() error {
 		}
 	} else {
 
-		pimDir := ic.config.BaseDir + ic.config.PimsConfigDir
 		//Get list of installed pims
-		var pimNames []string
-		fileInfo, err := ioutil.ReadDir(pimDir)
+		pimNames, err := ic.tools.GetListOfInstalledPimConfigs(pimConfigDir)
 
 		if err != nil {
-			return err
-		}
-
-		for _, file := range fileInfo {
-			pimNames = append(pimNames, strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())))
+			return errors.New("Encountered an error while trying to fetch list of installed pim configuration files: " + err.Error())
 		}
 
 		for _, pimName := range pimNames {
@@ -241,7 +233,8 @@ func (ic *UpgradeCommand) Run() error {
 						return err
 					}
 
-					//If the image exists the pim is already installed
+					//If the image does not exist, then this version for the pim is not installed
+					//and therefore does not need to be upgraded
 					if !imgExist {
 						continue
 					}

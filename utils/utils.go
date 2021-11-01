@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -49,6 +50,7 @@ type Tools interface {
 	FetchPimConfig(baseUrl string, pimName string, savePath string) error
 	FileExists(path string) bool
 	RemoveFile(path string) error
+	GetListOfInstalledPimConfigs(pimConfigDir string) ([]string, error)
 }
 
 //Utility Tool struct with its functions
@@ -234,6 +236,23 @@ func (u *Utility) RemoveFile(path string) error {
 	}
 
 	return nil
+}
+
+//GetListOfInstalledPimConfigs - returns a string array of the names of the pims
+//with configuration files currently in the pim configuration directory
+func (u *Utility) GetListOfInstalledPimConfigs(pimConfigDir string) ([]string, error) {
+	var pimNames []string
+	fileInfo, err := ioutil.ReadDir(pimConfigDir)
+
+	if err != nil {
+		return pimNames, err
+	}
+
+	for _, file := range fileInfo {
+		pimNames = append(pimNames, strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())))
+	}
+
+	return pimNames, nil
 }
 
 //Create an interface to house the CopyFiles implementation. This will allow us to make a mock of the CopyFiles Function.

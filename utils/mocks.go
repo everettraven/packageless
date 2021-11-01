@@ -84,6 +84,12 @@ type MockUtility struct {
 
 	//Should the Pim Configuration file exist
 	PimConfigShouldExist bool
+
+	//Pim Config Directory passed in
+	PimConfigDir string
+
+	//List of pim names to return
+	InstalledPims []string
 }
 
 //Create a new Mock Utility and set any default variables
@@ -374,6 +380,18 @@ func (mu *MockUtility) RemoveFile(path string) error {
 	}
 
 	return nil
+}
+
+func (mu *MockUtility) GetListOfInstalledPimConfigs(pimConfigDir string) ([]string, error) {
+	mu.Calls = append(mu.Calls, "GetListOfInstalledPimConfigs")
+
+	if mu.ErrorAt == "GetListOfInstalledPimConfigs" {
+		return nil, errors.New(mu.ErrorMsg)
+	}
+
+	mu.PimConfigDir = pimConfigDir
+
+	return mu.InstalledPims, nil
 }
 
 //Create a Mock for the Docker client
