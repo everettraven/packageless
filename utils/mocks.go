@@ -90,6 +90,9 @@ type MockUtility struct {
 
 	//List of pim names to return
 	InstalledPims []string
+
+	//List of pims fetched using FetchPimConfigs
+	FetchedPims []string
 }
 
 //Create a new Mock Utility and set any default variables
@@ -362,6 +365,8 @@ func (mu *MockUtility) FetchPimConfig(baseUrl string, pimName string, savePath s
 	if mu.ErrorAt == "FetchPimConfig" {
 		return errors.New(mu.ErrorMsg)
 	}
+
+	mu.FetchedPims = append(mu.FetchedPims, pimName)
 
 	return nil
 }

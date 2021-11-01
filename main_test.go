@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/everettraven/packageless/utils"
 )
 
 type TestCase struct {
@@ -36,6 +38,12 @@ func TestMain_OsArgs(t *testing.T) {
 			"Run Test",
 			[]string{"packageless", "run", "python"},
 			true,
+			"",
+		},
+		{
+			"Update Test",
+			[]string{"packageless", "update", "python"},
+			false,
 			"",
 		},
 		{
@@ -69,6 +77,12 @@ func TestMain_OsArgs(t *testing.T) {
 			"",
 		},
 		{
+			"Update Test",
+			[]string{"packageless", "update", "python"},
+			false,
+			"",
+		},
+		{
 			"Upgrade Test",
 			[]string{"packageless", "upgrade", "python"},
 			false,
@@ -91,16 +105,59 @@ func TestMain_OsArgs(t *testing.T) {
 
 	ed := filepath.Dir(ex)
 
-	err = Copy("./package_list.hcl", ed+"/package_list.hcl")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Create the .packageless directory and necessary subdirectories in the executable directory
+	err = utils.NewUtility().MakeDir(ed + "/.packageless")
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = Copy("./config.hcl", ed+"/config.hcl")
+	err = utils.NewUtility().MakeDir(ed + "/.packageless/pims_config")
 
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	err = utils.NewUtility().MakeDir(ed + "/.packageless/pims")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = Copy("./config.hcl", ed+"/.packageless/config.hcl")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Change the HOME/USERPROFILE environment variable to point to the executable directory
+
+	//First we need to save the old HOME/USERPROFILE environment variable so we can change it back later
+	var oldHomeEnv string
+
+	//If the user is on windows we need to change the USERPROFILE value, otherwise it is the HOME value
+	if runtime.GOOS == "windows" {
+		oldHomeEnv = os.Getenv("USERPROFILE")
+
+		//set a new HOME ENV variable
+		err = os.Setenv("USERPROFILE", ed)
+
+		if err != nil {
+			t.Fatalf("Error trying to set new USERPROFILE env value: %s", err.Error())
+		}
+	} else {
+		oldHomeEnv = os.Getenv("HOME")
+
+		//set a new HOME ENV variable
+		err = os.Setenv("HOME", ed)
+
+		if err != nil {
+			t.Fatalf("Error trying to set new HOME env value: %s", err.Error())
+		}
 	}
 
 	var cases []TestCase
@@ -132,6 +189,23 @@ func TestMain_OsArgs(t *testing.T) {
 			}
 
 		})
+	}
+
+	//Before we exit the tests lets set the HOME/USERPROFILE env var value back
+	if runtime.GOOS == "windows" {
+		//set a new HOME ENV variable
+		err = os.Setenv("USERPROFILE", oldHomeEnv)
+
+		if err != nil {
+			t.Fatalf("Failed to set the USERPROFILE env value back to the original value of '%s': %s", oldHomeEnv, err.Error())
+		}
+	} else {
+
+		err = os.Setenv("HOME", oldHomeEnv)
+
+		if err != nil {
+			t.Fatalf("Failed to set the HOME env value back to the original value of '%s': %s", oldHomeEnv, err.Error())
+		}
 	}
 
 }

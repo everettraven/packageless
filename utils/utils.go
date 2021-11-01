@@ -190,7 +190,7 @@ func (u *Utility) FetchPimConfig(baseUrl string, pimName string, savePath string
 
 	defer resp.Body.Close()
 
-	file, err := u.OverwriteFile(savePath + "/" + pimFile)
+	file, err := u.OverwriteFile(savePath + pimFile)
 
 	if err != nil {
 		return err

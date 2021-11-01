@@ -33,7 +33,7 @@ func wrappedMain() (int, error) {
 		return 1, err
 	}
 
-	configLoc = configLoc + "/.packageless/config/config.hcl"
+	configLoc = configLoc + "/.packageless/config.hcl"
 
 	configBody, err := util.GetHCLBody(configLoc)
 

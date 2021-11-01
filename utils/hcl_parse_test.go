@@ -348,7 +348,7 @@ func TestHCLParse_Integration_PackageList(t *testing.T) {
 	util := NewUtility()
 
 	//Read the Test HCL Config file
-	body, err := util.GetHCLBody("../testing/test_package_list.hcl")
+	body, err := util.GetHCLBody("../testing/pims_config/test.hcl")
 
 	//Shouldn't throw an error
 	if err != nil {

@@ -1,11 +1,9 @@
 package subcommands
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
 
 	"github.com/everettraven/packageless/utils"
 )
@@ -41,7 +39,7 @@ func (uc *UpdateCommand) Name() string {
 //Initialize the command, for this particular subcommand we should just do nothing
 func (uc *UpdateCommand) Init(args []string) error {
 	if len(args) <= 0 {
-		fmt.Println("No pim specified, upgrading all currently installed pims.")
+		fmt.Println("No pim specified, updating all currently installed pim configurations.")
 	} else {
 		uc.name = args[0]
 	}
@@ -51,34 +49,28 @@ func (uc *UpdateCommand) Init(args []string) error {
 //Run the command, this command should fetch the pim config for
 //either the specified package or all currently installed packages
 func (uc *UpdateCommand) Run() error {
-	pimDir := uc.config.BaseDir + uc.config.PimsConfigDir
+	pimConfigDir := uc.config.BaseDir + uc.config.PimsConfigDir
 	//Get list of installed pims
-	var pims []string
-	fileInfo, err := ioutil.ReadDir(pimDir)
+	pims, err := uc.tools.GetListOfInstalledPimConfigs(pimConfigDir)
 
 	if err != nil {
-		return err
-	}
-
-	for _, file := range fileInfo {
-		//if a package name was specified, lets only update the one package
-		if uc.name != "" {
-			filename := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
-			if filename == uc.name {
-				pims = append(pims, filename)
-				break
-			}
-		} else {
-			pims = append(pims, strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())))
-		}
+		return errors.New("Encountered an error while trying to fetch list of installed pim configuration files: " + err.Error())
 	}
 
 	//Loop and download most recent pim configuration for pims
 	for _, pim := range pims {
+
+		//If a specific package name is specified, skip over all the installed pims that are not the specified one
+		if uc.name != "" {
+			if pim != uc.name {
+				continue
+			}
+		}
+
 		fmt.Println("Updating pim: " + pim)
-		err = uc.tools.FetchPimConfig(uc.config.RepositoryHost, pim, pimDir)
+		err = uc.tools.FetchPimConfig(uc.config.RepositoryHost, pim, pimConfigDir)
 		if err != nil {
-			return err
+			return errors.New("Encountered an error while trying to fetch the latest pim configuration file for pim '" + pim + "': " + err.Error())
 		}
 	}
 
