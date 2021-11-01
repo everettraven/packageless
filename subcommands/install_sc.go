@@ -4,6 +4,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -204,21 +206,30 @@ func (ic *InstallCommand) Run() error {
 
 	}
 
+	//get the executable directory for setting the aliases
+	ex, err := os.Executable()
+
+	if err != nil {
+		return err
+	}
+
+	executableDir := filepath.Dir(ex)
+
 	if ic.config.Alias {
 		//Set the alias for the command
 		fmt.Println("Setting Alias")
 
 		if runtime.GOOS == "windows" {
 			if version.Version != "latest" {
-				err = ic.tools.AddAliasWin(pim.Name+":"+version.Version, pimDir)
+				err = ic.tools.AddAliasWin(pim.Name+":"+version.Version, executableDir)
 			} else {
-				err = ic.tools.AddAliasWin(pim.Name, pimDir)
+				err = ic.tools.AddAliasWin(pim.Name, executableDir)
 			}
 		} else {
 			if version.Version != "latest" {
-				err = ic.tools.AddAliasUnix(pim.Name+":"+version.Version, pimDir)
+				err = ic.tools.AddAliasUnix(pim.Name+":"+version.Version, executableDir)
 			} else {
-				err = ic.tools.AddAliasUnix(pim.Name, pimDir)
+				err = ic.tools.AddAliasUnix(pim.Name, executableDir)
 			}
 		}
 

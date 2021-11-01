@@ -128,6 +128,12 @@ func TestMain_OsArgs(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	err = utils.NewUtility().MakeDir(ed + "/Documents/WindowsPowerShell")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = Copy("./config.hcl", ed+"/.packageless/config.hcl")
 
 	if err != nil {

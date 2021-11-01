@@ -4,6 +4,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -177,21 +179,30 @@ func (uc *UninstallCommand) Run() error {
 		return err
 	}
 
+	//get the executable directory for removing the aliases
+	ex, err := os.Executable()
+
+	if err != nil {
+		return err
+	}
+
+	executableDir := filepath.Dir(ex)
+
 	if uc.config.Alias {
 		//Remove aliases
 		fmt.Println("Removing Alias")
 
 		if runtime.GOOS == "windows" {
 			if version.Version != "latest" {
-				err = uc.tools.RemoveAliasWin(pim.Name+":"+version.Version, pimDir)
+				err = uc.tools.RemoveAliasWin(pim.Name+":"+version.Version, executableDir)
 			} else {
-				err = uc.tools.RemoveAliasWin(pim.Name, pimDir)
+				err = uc.tools.RemoveAliasWin(pim.Name, executableDir)
 			}
 		} else {
 			if version.Version != "latest" {
-				err = uc.tools.RemoveAliasUnix(pim.Name+":"+version.Version, pimDir)
+				err = uc.tools.RemoveAliasUnix(pim.Name+":"+version.Version, executableDir)
 			} else {
-				err = uc.tools.RemoveAliasUnix(pim.Name, pimDir)
+				err = uc.tools.RemoveAliasUnix(pim.Name, executableDir)
 			}
 		}
 
