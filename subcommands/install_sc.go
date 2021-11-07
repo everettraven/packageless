@@ -82,6 +82,19 @@ func (ic *InstallCommand) Run() error {
 
 	pimDir := ic.config.BaseDir + ic.config.PimsDir
 
+	//Make the pim config and pim directory if they do not already exist
+	err := ic.tools.MakeDir(pimConfigDir)
+
+	if err != nil {
+		return err
+	}
+
+	err = ic.tools.MakeDir(pimDir)
+
+	if err != nil {
+		return err
+	}
+
 	//Check if pim config already exists
 	if !ic.tools.FileExists(pimPath) {
 		err := ic.tools.FetchPimConfig(ic.config.RepositoryHost, pimName, pimConfigDir)

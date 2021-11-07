@@ -95,6 +95,8 @@ func TestInstallFlow(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -126,8 +128,11 @@ func TestInstallFlow(t *testing.T) {
 	//commands to have aliases created
 	var aliasCmds []string
 
-	var pimDir = config.BaseDir + config.PimsDir
+	pimDir := config.BaseDir + config.PimsDir
+	pimConfigDir := config.BaseDir + config.PimsConfigDir
 
+	mkdirs = append(mkdirs, pimConfigDir)
+	mkdirs = append(mkdirs, pimDir)
 	//Fill lists
 	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
@@ -233,6 +238,8 @@ func TestInstallErrorAtGetHCLBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 	}
@@ -283,6 +290,8 @@ func TestInstallErrorAtParseBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -334,6 +343,8 @@ func TestInstallErrorAtImageExists(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -386,6 +397,8 @@ func TestInstallErrorAtPullImage(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -439,11 +452,6 @@ func TestInstallErrorAtMakeDir(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
-		"FileExists",
-		"GetHCLBody",
-		"ParseBody",
-		"ImageExists",
-		"PullImage",
 		"MakeDir",
 	}
 
@@ -493,6 +501,8 @@ func TestInstallErrorAtCreateContainer(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -549,6 +559,8 @@ func TestInstallErrorAtCopyFromContainer(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -606,6 +618,8 @@ func TestInstallErrorAtRemoveContainer(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -664,6 +678,8 @@ func TestInstallErrorAtAddAlias(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -725,6 +741,8 @@ func TestInstallImageExists(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -809,6 +827,8 @@ func TestInstallNonExistPackage(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -853,6 +873,8 @@ func TestInstallAliasFalse(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -881,6 +903,10 @@ func TestInstallAliasFalse(t *testing.T) {
 	var mkdirs []string
 
 	pimDir := config.BaseDir + config.PimsDir
+	pimConfigDir := config.BaseDir + config.PimsConfigDir
+
+	mkdirs = append(mkdirs, pimConfigDir)
+	mkdirs = append(mkdirs, pimDir)
 
 	//Fill lists
 	for _, pim := range mu.Pim.Pims {
@@ -981,6 +1007,8 @@ func TestInstallNonExistVersion(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
@@ -1026,6 +1054,8 @@ func TestInstallFlowPimConfigNotExist(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"FetchPimConfig",
 		"GetHCLBody",
@@ -1058,8 +1088,11 @@ func TestInstallFlowPimConfigNotExist(t *testing.T) {
 	//commands to have aliases created
 	var aliasCmds []string
 
-	var pimDir = config.BaseDir + config.PimsDir
+	pimDir := config.BaseDir + config.PimsDir
+	pimConfigDir := config.BaseDir + config.PimsConfigDir
 
+	mkdirs = append(mkdirs, pimConfigDir)
+	mkdirs = append(mkdirs, pimDir)
 	//Fill lists
 	for _, pim := range mu.Pim.Pims {
 		//Just use the first version
@@ -1166,6 +1199,8 @@ func TestInstallErrorAtFetchPimConfig(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"MakeDir",
+		"MakeDir",
 		"FileExists",
 		"FetchPimConfig",
 	}
