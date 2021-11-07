@@ -1,5 +1,5 @@
 ---
-id: subcommand-uninstall
+id: uninstall
 title: uninstall
 ---
 
@@ -8,7 +8,7 @@ title: uninstall
 packageless uninstall [pim]
 ```
 
-Packages follow a particular format. If you specify just the pim that you want uninstalled, the latest version of the pim that **packageless** has will be uninstalled.
+Pims follow a particular format. If you specify just the pim that you want uninstalled, the latest version of the pim that **packageless** has will be uninstalled.
 
 You can also specify a particular version by following this format:
 ```
@@ -23,7 +23,7 @@ however, **packageless** defaults to getting the latest version if one is not sp
 
 ## Examples
 :::note
-These examples do NOT reflect packages that can be used by **packageless** and is just for demonstration purposes
+These examples do NOT reflect pims that can be used by **packageless** and is just for demonstration purposes
 :::
 Uninstalling the latest version of python:
 ```

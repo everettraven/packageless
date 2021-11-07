@@ -23,16 +23,18 @@ module.exports = {
           'cli/packageless',
           {
             Subcommands: [
-              'cli/subcommands/subcommand-install',
-              'cli/subcommands/subcommand-uninstall',
-              'cli/subcommands/subcommand-run',
-              'cli/subcommands/subcommand-upgrade',
-              'cli/subcommands/subcommand-version'
+              'cli/subcommands/install',
+              'cli/subcommands/uninstall',
+              'cli/subcommands/run',
+              'cli/subcommands/update',
+              'cli/subcommands/upgrade',
+              'cli/subcommands/version'
             ]
           },
         ]
       },
-      'contrib'
+      'contrib',
+      'configuration'
     ]
   }
 };

@@ -4,16 +4,15 @@
 Thanks for checking out **packageless**! Keep reading for some information about **packageless**.
 
 ## What is packageless?
-**packageless** is a package manager that utilizes containers to actually run the packages that you "install". With packageless you aren't actually "installing" packages but rather pulling images from a container image registry and creating volumes to be mounted to the container.
+**packageless** is a package manager, but not your traditional package manager. **packageless** doesn't install traditional packages, but rather *package images* or pims. Pims are container images that contain a package and set it as the entrypoint for when the container is ran. When you install a "package" (pim) with **packageless** you are actually just pulling a container image down from a container registry. **packageless** handles the creation of the volumes necessary for the container to run appropriately. **packageless** can even set aliases for you, that way you can use the "packages" (pims) you install the same as you would after installing the package with another package manager.
 
-**packageless** will even set aliases so that you can use the packages exactly how you normally would!
+The currently available pims can be found at [packageless-pims](https://github.com/everettraven/packageless-pims)
 
 ## Why packageless?
 **packageless** solves a few problems:
-- You can now install any package on any OS, as long as it is capable of running in a container
-- Depedency issues are limited due to each package being run in its own isolated environment
-- Installs are faster due to having to only pull an image and not wait to download component from various different places
-- When you uninstall a package it is truly uninstalled, all volumes and images associated with the package are removed
+- You can now install any package on any OS, as long as the OS can run containers
+- Packages are run in an isolated environment
+- Makes it easy to install and run multiple different versions of a package
 
 # Development
 **packageless** is still in the very early stages of development and functionality is likely to change drastically

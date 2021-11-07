@@ -1,5 +1,5 @@
 ---
-id: subcommand-run
+id: run
 title: run
 ---
 
@@ -12,7 +12,7 @@ When using this subcommand, **packageless** will run the pim that is specified a
 
 ## Examples
 :::note
-These examples do NOT reflect packages that can be used by **packageless** and is just for demonstration purposes
+These examples do NOT reflect pims that can be used by **packageless** and is just for demonstration purposes
 :::
 Running the latest version of python:
 ```
