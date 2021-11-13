@@ -12,7 +12,7 @@ if (-not (Test-Path $HOME\.packageless)) {
 
 Write-Output "Downloading the executable"
 
-Invoke-WebRequest https://github.com/everettraven/packageless/releases/latest/download/packageless-windows.exe -OutFile $HOME\bin\packageless.exe
+Invoke-WebRequest https://github.com/everettraven/packageless/releases/latest/download/packageless-windows -OutFile $HOME\bin\packageless.exe
 
 Write-Output "Adding packageless to PATH"
 

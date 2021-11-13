@@ -19,7 +19,7 @@ fi
 echo "Downloading the executable..."
 if [ "$OSTYPE" = "darwin" ]
 then
-    curl -L -o ~/bin/packageless https://github.com/everettraven/packageless/releases/latest/download/packageless-mac
+    curl -L -o ~/bin/packageless https://github.com/everettraven/packageless/releases/latest/download/packageless-macos
 else
     curl -L -o ~/bin/packageless https://github.com/everettraven/packageless/releases/latest/download/packageless-linux
 fi
