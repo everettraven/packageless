@@ -34,7 +34,7 @@ jobs:
       - name: Upload build artifacts for ${{ runner.os }}
         uses: actions/upload-artifact@v2
         with:
-          name: build-${{ env.RUNNER_OS_LOWER }}-${{ github.ref }}
+          name: build-${{ env.RUNNER_OS_LOWER }}-${{ github.ref_name }}
           path: packageless-${{ env.RUNNER_OS_LOWER }}
   # Create the release and upload the executable files
   release:
@@ -44,15 +44,15 @@ jobs:
       - name: Download Windows build artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-windows-${{ github.ref }}
+          name: build-windows-${{ github.ref_name }}
       - name: Download Linux build artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-linux-${{ github.ref }}
+          name: build-linux-${{ github.ref_name }}
       - name: Download MacOS build artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-macos-${{ github.ref }}
+          name: build-macos-${{ github.ref_name }}
       - name: Create release and upload files
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
