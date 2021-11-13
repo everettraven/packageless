@@ -81,6 +81,18 @@ type MockUtility struct {
 
 	//Keep track of the alias data
 	CmdToAlias []string
+
+	//Should the Pim Configuration file exist
+	PimConfigShouldExist bool
+
+	//Pim Config Directory passed in
+	PimConfigDir string
+
+	//List of pim names to return
+	InstalledPims []string
+
+	//List of pims fetched using FetchPimConfigs
+	FetchedPims []string
 }
 
 //Create a new Mock Utility and set any default variables
@@ -98,14 +110,14 @@ func NewMockUtility() *MockUtility {
 
 							Volumes: []Volume{
 								{
-									Path:  "/a/path",
+									Path:  "a/path",
 									Mount: "/another/one",
 								},
 							},
 							Copies: []*Copy{
 								{
 									Source: "/source/path",
-									Dest:   "/destination",
+									Dest:   "destination",
 								},
 							},
 							Port: "3000",
@@ -115,13 +127,18 @@ func NewMockUtility() *MockUtility {
 			},
 		},
 		Conf: Config{
-			BaseDir:   "/base",
-			StartPort: 3000,
-			PortInc:   1,
+			BaseDir:        "~/.packageless/",
+			StartPort:      3000,
+			PortInc:        1,
+			Alias:          true,
+			RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+			PimsConfigDir:  "pims_config/",
+			PimsDir:        "pims/",
 		},
-		HCLBody:     hcl.EmptyBody(),
-		ErrorMsg:    "Testing for error handling",
-		ContainerID: "FakeContainer123",
+		HCLBody:              hcl.EmptyBody(),
+		ErrorMsg:             "Testing for error handling",
+		ContainerID:          "FakeContainer123",
+		PimConfigShouldExist: true,
 	}
 
 	return mu
@@ -340,6 +357,46 @@ func (mu *MockUtility) RemoveAliasUnix(name string, ed string) error {
 	}
 
 	return nil
+}
+
+func (mu *MockUtility) FetchPimConfig(baseUrl string, pimName string, savePath string) error {
+	mu.Calls = append(mu.Calls, "FetchPimConfig")
+
+	if mu.ErrorAt == "FetchPimConfig" {
+		return errors.New(mu.ErrorMsg)
+	}
+
+	mu.FetchedPims = append(mu.FetchedPims, pimName)
+
+	return nil
+}
+
+func (mu *MockUtility) FileExists(path string) bool {
+	mu.Calls = append(mu.Calls, "FileExists")
+
+	return mu.PimConfigShouldExist
+}
+
+func (mu *MockUtility) RemoveFile(path string) error {
+	mu.Calls = append(mu.Calls, "RemoveFile")
+
+	if mu.ErrorAt == "RemoveFile" {
+		return errors.New(mu.ErrorMsg)
+	}
+
+	return nil
+}
+
+func (mu *MockUtility) GetListOfInstalledPimConfigs(pimConfigDir string) ([]string, error) {
+	mu.Calls = append(mu.Calls, "GetListOfInstalledPimConfigs")
+
+	if mu.ErrorAt == "GetListOfInstalledPimConfigs" {
+		return nil, errors.New(mu.ErrorMsg)
+	}
+
+	mu.PimConfigDir = pimConfigDir
+
+	return mu.InstalledPims, nil
 }
 
 //Create a Mock for the Docker client

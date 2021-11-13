@@ -42,10 +42,13 @@ type PimHCLUtil struct {
 
 //Config object to contain the configuration details
 type Config struct {
-	BaseDir   string `hcl:"base_dir,attr"`
-	StartPort int    `hcl:"start_port,attr"`
-	PortInc   int    `hcl:"port_increment,attr"`
-	Alias     bool   `hcl:"alias,attr"`
+	BaseDir        string `hcl:"base_dir,attr"`
+	StartPort      int    `hcl:"start_port,attr"`
+	PortInc        int    `hcl:"port_increment,attr"`
+	Alias          bool   `hcl:"alias,attr"`
+	RepositoryHost string `hcl:"repository_host,attr"`
+	PimsConfigDir  string `hcl:"pims_config_dir,attr"`
+	PimsDir        string `hcl:"pims_dir,attr"`
 }
 
 //Parse function to parse the HCL body given

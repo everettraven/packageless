@@ -4,8 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/docker/docker/client"
@@ -23,15 +21,18 @@ type UpgradeCommand struct {
 	tools utils.Tools
 
 	cp utils.Copier
+
+	config utils.Config
 }
 
 //Instantiation method for a new UpgradeCommand
-func NewUpgradeCommand(tools utils.Tools, cp utils.Copier) *UpgradeCommand {
+func NewUpgradeCommand(tools utils.Tools, cp utils.Copier, config utils.Config) *UpgradeCommand {
 	//Create a new UpgradeCommand and set the FlagSet
 	ic := &UpgradeCommand{
-		fs:    flag.NewFlagSet("upgrade", flag.ContinueOnError),
-		tools: tools,
-		cp:    cp,
+		fs:     flag.NewFlagSet("upgrade", flag.ContinueOnError),
+		tools:  tools,
+		cp:     cp,
+		config: config,
 	}
 
 	return ic
@@ -77,33 +78,34 @@ func (ic *UpgradeCommand) Run() error {
 		return err
 	}
 
-	//Create a variable for the executable directory
-	ex, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	ed := filepath.Dir(ex)
+	pimConfigDir := ic.config.BaseDir + ic.config.PimsConfigDir
+	pimDir := ic.config.BaseDir + ic.config.PimsDir
 
-	//Default location of the pim list
-	pimList := ed + "/package_list.hcl"
+	if pimName != "" {
 
-	pimListBody, err := ic.tools.GetHCLBody(pimList)
+		pimPath := pimConfigDir + pimName + ".hcl"
 
-	if err != nil {
-		return err
-	}
+		//Check if pim config already exists
+		if !ic.tools.FileExists(pimPath) {
+			return errors.New("Could not find pim configuration for: " + pimName + " has it been installed?")
+		}
 
-	//Parse the pim list
-	parseOut, err := ic.tools.ParseBody(pimListBody, utils.PimHCLUtil{})
+		pimListBody, err := ic.tools.GetHCLBody(pimPath)
 
-	pims := parseOut.(utils.PimHCLUtil)
+		if err != nil {
+			return err
+		}
 
-	//Check for errors
-	if err != nil {
-		return err
-	}
+		//Parse the pim list
+		parseOut, err := ic.tools.ParseBody(pimListBody, utils.PimHCLUtil{})
 
-	if ic.name != "" {
+		pims := parseOut.(utils.PimHCLUtil)
+
+		//Check for errors
+		if err != nil {
+			return err
+		}
+
 		//Look for the pim we want in the pim list
 		for _, pimItem := range pims.Pims {
 			//If we find it, set some variables and break
@@ -152,7 +154,7 @@ func (ic *UpgradeCommand) Run() error {
 		for _, vol := range version.Volumes {
 			//Make sure that a path is given. If not we already assume that the working directory will be mounted
 			if vol.Path != "" {
-				err = ic.tools.UpgradeDir(ed + vol.Path)
+				err = ic.tools.UpgradeDir(pimDir + vol.Path)
 
 				if err != nil {
 					return err
@@ -174,7 +176,7 @@ func (ic *UpgradeCommand) Run() error {
 			fmt.Println("Copying necessary files 2/3")
 			//Copy the files from the container to the locations
 			for _, copy := range version.Copies {
-				err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
+				err = ic.tools.CopyFromContainer(copy.Source, pimDir+copy.Dest, containerID, cli, ic.cp)
 
 				if err != nil {
 					return err
@@ -193,80 +195,109 @@ func (ic *UpgradeCommand) Run() error {
 
 		}
 	} else {
-		//Loop through the pims in the pim list
-		for _, pim := range pims.Pims {
 
-			for _, ver := range pim.Versions {
-				//Check if the corresponding pim image is already installed
-				imgExist, err := ic.tools.ImageExists(ver.Image, cli)
+		//Get list of installed pims
+		pimNames, err := ic.tools.GetListOfInstalledPimConfigs(pimConfigDir)
 
-				//Check for errors
-				if err != nil {
-					return err
-				}
+		if err != nil {
+			return errors.New("Encountered an error while trying to fetch list of installed pim configuration files: " + err.Error())
+		}
 
-				//If the image exists the pim is already installed
-				if !imgExist {
-					continue
-				}
+		for _, pimName := range pimNames {
+			pimPath := pimConfigDir + pimName + ".hcl"
 
-				fmt.Println("Upgrading", pim.Name+":"+ver.Version)
-				//Pull the image down from Docker Hub
-				err = ic.tools.PullImage(ver.Image, cli)
+			pimListBody, err := ic.tools.GetHCLBody(pimPath)
 
-				if err != nil {
-					return err
-				}
+			if err != nil {
+				return err
+			}
 
-				fmt.Println("Updating pim directories")
+			//Parse the pim list
+			parseOut, err := ic.tools.ParseBody(pimListBody, utils.PimHCLUtil{})
 
-				//Check the volumes and create the directories for them if they don't already exist
-				for _, vol := range ver.Volumes {
-					//Make sure that a path is given. If not we already assume that the working directory will be mounted
-					if vol.Path != "" {
-						err = ic.tools.UpgradeDir(ed + vol.Path)
+			pims := parseOut.(utils.PimHCLUtil)
 
-						if err != nil {
-							return err
-						}
+			if err != nil {
+				return err
+			}
+
+			//Loop through the pims in the pim list
+			for _, pim := range pims.Pims {
+
+				for _, ver := range pim.Versions {
+					//Check if the corresponding pim image is already installed
+					imgExist, err := ic.tools.ImageExists(ver.Image, cli)
+
+					//Check for errors
+					if err != nil {
+						return err
 					}
-				}
 
-				//Check and see if any files need to be copied from the container to one of the volumes on the host.
-				if len(ver.Copies) > 0 {
+					//If the image does not exist, then this version for the pim is not installed
+					//and therefore does not need to be upgraded
+					if !imgExist {
+						continue
+					}
 
-					fmt.Println("Copying necessary files 1/3")
-					//Create the container so that we can copy the files over to the right places
-					containerID, err := ic.tools.CreateContainer(ver.Image, cli)
+					fmt.Println("Upgrading", pim.Name+":"+ver.Version)
+					//Pull the image down from Docker Hub
+					err = ic.tools.PullImage(ver.Image, cli)
 
 					if err != nil {
 						return err
 					}
 
-					fmt.Println("Copying necessary files 2/3")
-					//Copy the files from the container to the locations
-					for _, copy := range ver.Copies {
-						err = ic.tools.CopyFromContainer(copy.Source, ed+copy.Dest, containerID, cli, ic.cp)
+					fmt.Println("Updating pim directories")
+
+					//Check the volumes and create the directories for them if they don't already exist
+					for _, vol := range ver.Volumes {
+						//Make sure that a path is given. If not we already assume that the working directory will be mounted
+						if vol.Path != "" {
+							err = ic.tools.UpgradeDir(pimDir + vol.Path)
+
+							if err != nil {
+								return err
+							}
+						}
+					}
+
+					//Check and see if any files need to be copied from the container to one of the volumes on the host.
+					if len(ver.Copies) > 0 {
+
+						fmt.Println("Copying necessary files 1/3")
+						//Create the container so that we can copy the files over to the right places
+						containerID, err := ic.tools.CreateContainer(ver.Image, cli)
 
 						if err != nil {
 							return err
 						}
+
+						fmt.Println("Copying necessary files 2/3")
+						//Copy the files from the container to the locations
+						for _, copy := range ver.Copies {
+							err = ic.tools.CopyFromContainer(copy.Source, pimDir+copy.Dest, containerID, cli, ic.cp)
+
+							if err != nil {
+								return err
+							}
+						}
+
+						fmt.Println("Copying necessary files 3/3")
+						//Remove the Container
+						err = ic.tools.RemoveContainer(containerID, cli)
+
+						if err != nil {
+							return err
+						}
+
+						fmt.Println(pim.Name, "successfully upgraded")
 					}
 
-					fmt.Println("Copying necessary files 3/3")
-					//Remove the Container
-					err = ic.tools.RemoveContainer(containerID, cli)
-
-					if err != nil {
-						return err
-					}
-
-					fmt.Println(pim.Name, "successfully upgraded")
 				}
 
 			}
-
 		}
+
 	}
 
 	return nil

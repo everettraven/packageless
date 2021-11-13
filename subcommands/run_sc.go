@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -83,15 +82,14 @@ func (rc *RunCommand) Run() error {
 		return err
 	}
 
-	//Create a variable for the executable directory
-	ex, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	ed := filepath.Dir(ex)
+	pimConfigDir := rc.config.BaseDir + rc.config.PimsConfigDir
 
 	//Default location of the pim list
-	pimList := ed + "/package_list.hcl"
+	pimList := pimConfigDir + pimName + ".hcl"
+
+	if !rc.tools.FileExists(pimList) {
+		return errors.New("Could not find a configuration file for '" + pimName + "' has it been installed?")
+	}
 
 	pimListBody, err := rc.tools.GetHCLBody(pimList)
 
@@ -127,7 +125,7 @@ func (rc *RunCommand) Run() error {
 
 	//Make sure we have found the pim in the pim list
 	if !found {
-		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim list")
+		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim configuration")
 	}
 
 	//Check if the corresponding pim image is already installed
@@ -149,9 +147,11 @@ func (rc *RunCommand) Run() error {
 
 	ports = append(ports, strconv.Itoa(rc.config.StartPort)+":"+version.Port)
 
+	pimDir := rc.config.BaseDir + rc.config.PimsDir
+
 	for _, vol := range version.Volumes {
 		if vol.Path != "" {
-			volumes = append(volumes, ed+vol.Path+":"+vol.Mount)
+			volumes = append(volumes, pimDir+vol.Path+":"+vol.Mount)
 		} else {
 			sourcePath, err := os.Getwd()
 

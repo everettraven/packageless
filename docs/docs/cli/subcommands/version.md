@@ -1,5 +1,5 @@
 ---
-id: subcommand-version
+id: version
 title: version
 ---
 

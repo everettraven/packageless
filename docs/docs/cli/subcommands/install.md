@@ -1,5 +1,5 @@
 ---
-id: subcommand-install
+id: install
 title: install
 ---
 
@@ -8,7 +8,7 @@ title: install
 packageless install [pim]
 ```
 
-Packages follow a particular format. If you specify just the pim that you want installed, the latest version of the pim that **packageless** has will be installed.
+Pims follow a particular format. If you specify just the pim that you want installed, the latest version of the pim that **packageless** has will be installed.
 
 You can also specify a particular version by following this format:
 ```
@@ -23,7 +23,7 @@ however, **packageless** defaults to getting the latest version if one is not sp
 
 ## Examples
 :::note
-These examples do NOT reflect packages that can be installed by **packageless** and is just for demonstration purposes
+These examples do NOT reflect pims that can be installed by **packageless** and is just for demonstration purposes
 :::
 Installing the latest version of python:
 ```

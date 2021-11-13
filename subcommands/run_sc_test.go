@@ -1,8 +1,6 @@
 package subcommands
 
 import (
-	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"testing"
@@ -15,10 +13,13 @@ func TestRunName(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -33,10 +34,13 @@ func TestRunInit(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -61,10 +65,13 @@ func TestRunNoPackage(t *testing.T) {
 	expectedErr := "No pim name was found. You must include the name of the pim you wish to run."
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -87,17 +94,20 @@ func TestRunNonExistPackage(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
 
 	args := []string{"nonexistent"}
 
-	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim list"
+	expectedErr := "Could not find pim nonexistent with version 'latest' in the pim configuration"
 
 	err := rc.Init(args)
 
@@ -117,6 +127,7 @@ func TestRunNonExistPackage(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 	}
@@ -133,10 +144,13 @@ func TestRunImageNotExist(t *testing.T) {
 	mu.ImgExist = false
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -163,6 +177,7 @@ func TestRunImageNotExist(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -179,27 +194,21 @@ func TestRunFlowNoRunArgs(t *testing.T) {
 
 	mu.ImgExist = true
 
-	//Get the executable directory
-	ex, err := os.Executable()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ed := filepath.Dir(ex)
-
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
 
 	args := []string{"python"}
 
-	err = rc.Init(args)
+	err := rc.Init(args)
 
 	if err != nil {
 		t.Fatal(err)
@@ -213,6 +222,7 @@ func TestRunFlowNoRunArgs(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -229,8 +239,10 @@ func TestRunFlowNoRunArgs(t *testing.T) {
 		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pim.Pims[0].Versions[0].Image)
 	}
 
+	pimDir := config.BaseDir + config.PimsDir
+
 	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pim.Pims[0].Versions[0].Port}
-	volume := []string{ed + mu.Pim.Pims[0].Versions[0].Volumes[0].Path + ":" + mu.Pim.Pims[0].Versions[0].Volumes[0].Mount}
+	volume := []string{pimDir + mu.Pim.Pims[0].Versions[0].Volumes[0].Path + ":" + mu.Pim.Pims[0].Versions[0].Volumes[0].Mount}
 
 	//Make sure the ports passed in matches
 	if !reflect.DeepEqual(mu.RunPorts, port) {
@@ -254,20 +266,14 @@ func TestRunFlowRunArgs(t *testing.T) {
 
 	mu.ImgExist = true
 
-	//Get the executable directory
-	ex, err := os.Executable()
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ed := filepath.Dir(ex)
-
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -278,7 +284,7 @@ func TestRunFlowRunArgs(t *testing.T) {
 
 	args = append(args, runArgs...)
 
-	err = rc.Init(args)
+	err := rc.Init(args)
 
 	if err != nil {
 		t.Fatal(err)
@@ -292,6 +298,7 @@ func TestRunFlowRunArgs(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -308,8 +315,10 @@ func TestRunFlowRunArgs(t *testing.T) {
 		t.Fatalf("RunContainer: Image does not match the expected Image. Received Image: %s | Expected Image: %s", mu.RunImage, mu.Pim.Pims[0].Versions[0].Image)
 	}
 
+	pimDir := config.BaseDir + config.PimsDir
+
 	port := []string{strconv.Itoa(mu.Conf.StartPort) + ":" + mu.Pim.Pims[0].Versions[0].Port}
-	volume := []string{ed + mu.Pim.Pims[0].Versions[0].Volumes[0].Path + ":" + mu.Pim.Pims[0].Versions[0].Volumes[0].Mount}
+	volume := []string{pimDir + mu.Pim.Pims[0].Versions[0].Volumes[0].Path + ":" + mu.Pim.Pims[0].Versions[0].Volumes[0].Mount}
 
 	//Make sure the ports passed in matches
 	if !reflect.DeepEqual(mu.RunPorts, port) {
@@ -336,10 +345,13 @@ func TestRunErrorAtGetHCLBody(t *testing.T) {
 	mu.ErrorAt = "GetHCLBody"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -364,6 +376,7 @@ func TestRunErrorAtGetHCLBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 	}
 
@@ -382,10 +395,13 @@ func TestRunErrorAtParseBody(t *testing.T) {
 	mu.ErrorAt = "ParseBody"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -410,6 +426,7 @@ func TestRunErrorAtParseBody(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 	}
@@ -428,10 +445,13 @@ func TestRunErrorAtImageExists(t *testing.T) {
 	mu.ErrorAt = "ImageExists"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -456,6 +476,7 @@ func TestRunErrorAtImageExists(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -475,10 +496,13 @@ func TestRunErrorAtRunContainer(t *testing.T) {
 	mu.ErrorAt = "RunContainer"
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
@@ -503,6 +527,7 @@ func TestRunErrorAtRunContainer(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
@@ -519,17 +544,20 @@ func TestRunNonExistVersion(t *testing.T) {
 	mu := utils.NewMockUtility()
 
 	config := utils.Config{
-		BaseDir:   "./",
-		PortInc:   1,
-		StartPort: 3000,
-		Alias:     true,
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
 	}
 
 	rc := NewRunCommand(mu, config)
 
 	args := []string{"python:idontexist"}
 
-	expectedErr := "Could not find pim python with version 'idontexist' in the pim list"
+	expectedErr := "Could not find pim python with version 'idontexist' in the pim configuration"
 
 	err := rc.Init(args)
 
@@ -549,8 +577,56 @@ func TestRunNonExistVersion(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"FileExists",
 		"GetHCLBody",
 		"ParseBody",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
+
+func TestRunFileNotExists(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	mu.PimConfigShouldExist = false
+
+	rc := NewRunCommand(mu, config)
+
+	args := []string{"python:idontexist"}
+
+	expectedErr := "Could not find a configuration file for 'python' has it been installed?"
+
+	err := rc.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = rc.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"FileExists",
 	}
 
 	if !reflect.DeepEqual(callStack, mu.Calls) {

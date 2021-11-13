@@ -74,23 +74,23 @@ func (uc *UninstallCommand) Run() error {
 		pimVersion = "latest"
 	}
 
+	pimConfigDir := uc.config.BaseDir + uc.config.PimsConfigDir
+	pimPath := pimConfigDir + pimName + ".hcl"
+
+	pimDir := uc.config.BaseDir + uc.config.PimsDir
+
+	//Check if pim config already exists
+	if !uc.tools.FileExists(pimPath) {
+		return errors.New("configuration for pim: " + pimName + " could not be found. Have you installed " + pimName + "?")
+	}
+
 	//Create the Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
 	}
 
-	//Create a variable for the executable directory
-	ex, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	ed := filepath.Dir(ex)
-
-	//Default location of the pim list
-	pimList := ed + "/package_list.hcl"
-
-	pimListBody, err := uc.tools.GetHCLBody(pimList)
+	pimListBody, err := uc.tools.GetHCLBody(pimPath)
 
 	if err != nil {
 		return err
@@ -129,7 +129,7 @@ func (uc *UninstallCommand) Run() error {
 
 	//Make sure we have found the pim in the pim list
 	if !found {
-		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim list")
+		return errors.New("Could not find pim " + pimName + " with version '" + pimVersion + "' in the pim configuration")
 	}
 
 	//Check if the corresponding pim is already Uninstalled
@@ -154,7 +154,7 @@ func (uc *UninstallCommand) Run() error {
 	for _, vol := range version.Volumes {
 		//Make sure that a path is given.
 		if vol.Path != "" {
-			err = uc.tools.RemoveDir(ed + vol.Path)
+			err = uc.tools.RemoveDir(pimDir + vol.Path)
 
 			if err != nil {
 				return err
@@ -163,7 +163,7 @@ func (uc *UninstallCommand) Run() error {
 	}
 
 	//Remove the base directory for the pim
-	err = uc.tools.RemoveDir(ed + pim.BaseDir)
+	err = uc.tools.RemoveDir(pimDir + pim.BaseDir)
 
 	if err != nil {
 		return err
@@ -179,27 +179,43 @@ func (uc *UninstallCommand) Run() error {
 		return err
 	}
 
+	//get the executable directory for removing the aliases
+	ex, err := os.Executable()
+
+	if err != nil {
+		return err
+	}
+
+	executableDir := filepath.Dir(ex)
+
 	if uc.config.Alias {
 		//Remove aliases
 		fmt.Println("Removing Alias")
 
 		if runtime.GOOS == "windows" {
 			if version.Version != "latest" {
-				err = uc.tools.RemoveAliasWin(pim.Name+":"+version.Version, ed)
+				err = uc.tools.RemoveAliasWin(pim.Name+":"+version.Version, executableDir)
 			} else {
-				err = uc.tools.RemoveAliasWin(pim.Name, ed)
+				err = uc.tools.RemoveAliasWin(pim.Name, executableDir)
 			}
 		} else {
 			if version.Version != "latest" {
-				err = uc.tools.RemoveAliasUnix(pim.Name+":"+version.Version, ed)
+				err = uc.tools.RemoveAliasUnix(pim.Name+":"+version.Version, executableDir)
 			} else {
-				err = uc.tools.RemoveAliasUnix(pim.Name, ed)
+				err = uc.tools.RemoveAliasUnix(pim.Name, executableDir)
 			}
 		}
 
 		if err != nil {
 			return err
 		}
+	}
+
+	fmt.Println("Removing pim configuration")
+	err = uc.tools.RemoveFile(pimPath)
+
+	if err != nil {
+		return err
 	}
 
 	return nil

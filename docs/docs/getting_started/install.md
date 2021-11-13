@@ -44,37 +44,43 @@ If you are on Unix, this command should create a file named *packageless*
 ### Installing packageless
 Now lets ensure the proper directories are created.
 
-On Unix, if it doesn't exist, make the directory `~/bin` by running:
+On Unix, if it doesn't exist, make the necessary directories by running:
 ```
-mkdir ~/bin/packageless
+mkdir ~/bin
+mkdir ~/.packageless
 ```
-On Windows, if it doesn't exist, make the directory `%USERPROFILE%/bin` by running:
+On Windows, if it doesn't exist, make the necessary directories by running:
 
 Command Prompt:
 ```
-mkdir %USERPROFILE%\\bin\\packageless
+mkdir %USERPROFILE%\\bin
+mkdir %USERPROFILE%\\.packageless
 ```
 PowerShell:
 ```
-mkdir ~/bin/packageless
+mkdir ~/bin
+mkdir ~/.packageless
 ```
 
-Now copy the necessary files to the newly created directory
+Now copy the necessary files to the proper directories
 
 On Unix run:
 ```
-cp packageless config.hcl package_list.hcl ~/bin/packageless
+cp packageless ~/bin
+cp config.hcl ~/.packageless
 ```
 
 On Windows run:
 
 Command Prompt
 ```
-for %I in (packageless.exe config.hcl package_list.hcl) do copy %I %USERPROFILE%\\bin\\packageless
+copy packageless.exe %USERPROFILE%\\bin
+copy config.hcl %USERPROFILE%\\.packageless
 ```
 PowerShell:
 ```
-Copy-Item .\packageless.exe, .\config.hcl, .\package_list.hcl -Destination ~/bin/packageless
+Copy-Item .\packageless.exe -Destination ~/bin
+Copy-Item .\config.hcl -Destination ~/.packageless
 ```
 
 Now we need to set the system PATH variable to contain the directory we are storing the **packageless** files in
