@@ -23,21 +23,19 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     # Checkout the repo to build the file
     steps:
-      - id: os-lower
-        uses: ASzc/change-string-case-action@v1
-        with:
-          string: ${{ runner.os }}
+      - name: lowercase Runner OS
+        run: echo "RUNNER_OS_LOWER=${RUNNER_OS,,}" >> ${GITHUB_ENV} 
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
           go-version: 1.16.4
       - name: Build ${{ runner.os }} packageless with tag as version
-        run: go build -ldflags "-X github.com/everettraven/packageless/subcommands.version=${{ github.ref }}" -o packageless-${{ steps.os-lower.outputs.lowercase }}
+        run: go build -ldflags "-X github.com/everettraven/packageless/subcommands.version=${{ github.ref }}" -o packageless-${RUNNER_OS_LOWER}
       - name: Upload build artifacts for ${{ runner.os }}
         uses: actions/upload-artifact@v2
         with:
-          name: build-${{ steps.os-lower.output.lowercase }}-${{ github.ref }}
-          path: packageless-${{ steps.os-lower.output.lowercase }}
+          name: build-${RUNNER_OS_LOWER}-${{ github.ref }}
+          path: packageless-${RUNNER_OS_LOWER}
   # Create the release and upload the executable files
   release:
     needs: build-executables
