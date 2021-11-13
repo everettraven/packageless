@@ -1,0 +1,67 @@
+# GitHub Actions CI/CD to create a release for packageless
+name: release
+
+# Create a release when a new tag is pushed
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version for this release'
+        required: true
+
+# Set up the actual workflow jobs
+jobs:
+  # Build the executable on windows and upload it as an artifact to use in the release
+  build-executables:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    # Checkout the repo to build the file
+    steps:
+      - id: os-lower
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ runner.os }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.4
+      - name: Build ${{ runner.os }} packageless with tag as version
+        run: go build -ldflags "-X github.com/everettraven/packageless/subcommands.version=${{ github.ref }}" -o packageless-${{ steps.os-lower.outputs.lowercase }}
+      - name: Upload build artifacts for ${{ runner.os }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-${{ steps.os-lower.output.lowercase }}-${{ github.ref }}
+          path: ./packageless-${{ steps.os-lower.output.lowercase }}
+  # Create the release and upload the executable files
+  release:
+    needs: build-executables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build-windows-${{ github.ref }}
+      - name: Download Linux build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build-linux-${{ github.ref }}
+      - name: Download MacOS build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build-macos-${{ github.ref }}
+      - name: Create release and upload files
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            packageless-windows
+            packageless-linux
+            packageless-macos
+          generate_release_notes: true
+      
