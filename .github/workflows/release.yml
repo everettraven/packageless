@@ -24,7 +24,7 @@ jobs:
     # Checkout the repo to build the file
     steps:
       - name: lowercase Runner OS
-        run: echo "RUNNER_OS_LOWER=${RUNNER_OS,,}" >> ${GITHUB_ENV} 
+        run: echo "RUNNER_OS_LOWER=$(echo ${RUNNER_OS} | awk '{ print tolower($1) }')" >> ${GITHUB_ENV} 
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
