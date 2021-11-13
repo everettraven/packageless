@@ -8,7 +8,19 @@ Currently **packageless** is only able to be installed by compiling from source 
 
 There are plans to make it so that you can install **packageless** in a much easier way in the future.
 :::
+# Unix
+To install on a unix-based system (including Mac) you can run the installer shell script by running the following command:
+```
+curl -s https://raw.githubusercontent.com/everettraven/packageless/main/unixInstaller.sh | sh
+```
 
+# Windows
+To install on Windows, run the following PowerShell command to run the installer PowerShell script:
+```
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/everettraven/packageless/main/windowsInstaller.ps1'))
+```
+
+# Install from Source
 ## Install Docker
 Currently **packageless** relies on having Docker installed. In the future, **packageless** will support multiple different container runtime options.
 
