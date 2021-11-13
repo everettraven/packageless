@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: build-${{ steps.os-lower.output.lowercase }}-${{ github.ref }}
-          path: ./packageless-${{ steps.os-lower.output.lowercase }}
+          path: packageless-${{ steps.os-lower.output.lowercase }}
   # Create the release and upload the executable files
   release:
     needs: build-executables
