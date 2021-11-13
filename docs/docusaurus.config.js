@@ -10,7 +10,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
   baseUrl: '/packageless/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/light_mode.png',
   organizationName: 'everettraven', // Usually your GitHub org/user name.
   projectName: 'packageless', // Usually your repo name.
 
@@ -35,11 +35,13 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      
       navbar: {
         title: 'Packageless',
         logo: {
           alt: 'My Site Logo',
-          src: 'img/logo.svg',
+          src: 'img/light_mode.png',
+          srcDark: 'img/dark_mode.png',
         },
         items: [
           {

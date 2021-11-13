@@ -1,6 +1,8 @@
 ![Build Status](https://github.com/everettraven/packageless/workflows/build/badge.svg)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/everettraven/packageless.svg)
 
+![Social Image](.github/images/dark_mode_social.png)
+
 Thanks for checking out **packageless**! Keep reading for some information about **packageless**.
 
 ## What is packageless?
