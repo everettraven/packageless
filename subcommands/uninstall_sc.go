@@ -162,9 +162,6 @@ func (uc *UninstallCommand) Run() error {
 		}
 	}
 
-	//Remove the base directory for the pim
-	err = uc.tools.RemoveDir(pimDir + pim.BaseDir)
-
 	if err != nil {
 		return err
 	}
@@ -209,13 +206,6 @@ func (uc *UninstallCommand) Run() error {
 		if err != nil {
 			return err
 		}
-	}
-
-	fmt.Println("Removing pim configuration")
-	err = uc.tools.RemoveFile(pimPath)
-
-	if err != nil {
-		return err
 	}
 
 	return nil

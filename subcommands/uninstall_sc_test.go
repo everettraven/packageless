@@ -226,10 +226,8 @@ func TestUninstallFlow(t *testing.T) {
 		"ParseBody",
 		"ImageExists",
 		"RemoveDir",
-		"RemoveDir",
 		"RemoveImage",
 		"RemoveAlias",
-		"RemoveFile",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -260,7 +258,6 @@ func TestUninstallFlow(t *testing.T) {
 			rmdirs = append(rmdirs, pimDir+vol.Path)
 		}
 
-		rmdirs = append(rmdirs, pimDir+pim.BaseDir)
 		//Just use the first pim for the test
 		break
 	}
@@ -526,7 +523,6 @@ func TestUninstallErrorAtRemoveAlias(t *testing.T) {
 		"ParseBody",
 		"ImageExists",
 		"RemoveDir",
-		"RemoveDir",
 		"RemoveImage",
 		"RemoveAlias",
 	}
@@ -581,7 +577,6 @@ func TestUninstallErrorAtRemoveImage(t *testing.T) {
 		"ParseBody",
 		"ImageExists",
 		"RemoveDir",
-		"RemoveDir",
 		"RemoveImage",
 	}
 
@@ -626,9 +621,7 @@ func TestUninstallAliasFalse(t *testing.T) {
 		"ParseBody",
 		"ImageExists",
 		"RemoveDir",
-		"RemoveDir",
 		"RemoveImage",
-		"RemoveFile",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -654,8 +647,6 @@ func TestUninstallAliasFalse(t *testing.T) {
 		for _, vol := range version.Volumes {
 			rmdirs = append(rmdirs, pimDir+vol.Path)
 		}
-
-		rmdirs = append(rmdirs, pimDir+pim.BaseDir)
 
 		//Just use the first pim
 		break
