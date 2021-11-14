@@ -78,7 +78,7 @@ func TestImageExistsDoesExist(t *testing.T) {
 	dm := NewDockMock()
 
 	//Set the image for testing
-	img := "image"
+	img := "image:faketag"
 
 	//Set the return images array in the Mock Docker Client
 	dm.ILRet = []types.ImageSummary{
@@ -545,8 +545,8 @@ func TestRemoveImage(t *testing.T) {
 	}
 
 	//Check and make sure the image passed in is correct
-	if dm.IRImgID != imgID {
-		t.Fatalf("RemoveImage: Expected ImageID: %s | Received: %s", imgID, dm.IRImgID)
+	if dm.IRImgID != img {
+		t.Fatalf("RemoveImage: Expected ImageID: %s | Received: %s", img, dm.IRImgID)
 	}
 
 	//Check and make sure the image removal options passed in is correct
@@ -618,7 +618,7 @@ func TestDocker_Integration(t *testing.T) {
 	}
 
 	//make sure the image exists after being pulled
-	imgExist, err := util.ImageExists(img, cli)
+	imgExist, err := util.ImageExists(img+":latest", cli)
 
 	if err != nil {
 		t.Fatal(err)

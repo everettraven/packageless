@@ -49,7 +49,7 @@ func (u *Utility) ImageExists(imageID string, cli Client) (bool, error) {
 
 	//Loop through all the images and check if a match is found
 	for _, image := range images {
-		if strings.Split(image.RepoTags[0], ":")[0] == imageID {
+		if image.RepoTags[0] == imageID {
 			return true, nil
 		}
 	}
@@ -190,25 +190,8 @@ func (u *Utility) RemoveImage(image string, cli Client) error {
 	//Create the context and search for the image in the list of images
 	ctx := context.Background()
 
-	images, err := cli.ImageList(ctx, types.ImageListOptions{})
-
-	//Check for errors
-	if err != nil {
-		return err
-	}
-
-	//Create a variable to hold the ID of the image we want to remove
-	var imageID string
-
-	//Loop through all the images and check if a match is found
-	for _, img := range images {
-		if strings.Split(img.RepoTags[0], ":")[0] == image {
-			imageID = img.ID
-		}
-	}
-
 	//Remove the image
-	_, err = cli.ImageRemove(ctx, imageID, types.ImageRemoveOptions{Force: true})
+	_, err := cli.ImageRemove(ctx, image, types.ImageRemoveOptions{Force: true})
 
 	//Check for errors
 	if err != nil {
