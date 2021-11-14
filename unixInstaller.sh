@@ -24,6 +24,8 @@ else
     curl -L -o ~/bin/packageless https://github.com/everettraven/packageless/releases/latest/download/packageless-linux
 fi
 
+chmod +x ~/bin/packageless
+
 echo "Downloading packageless configuration file"
 curl -L -o ~/.packageless/config.hcl https://github.com/everettraven/packageless/releases/latest/download/config.hcl
 
