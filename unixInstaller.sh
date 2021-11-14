@@ -24,5 +24,8 @@ else
     curl -L -o ~/bin/packageless https://github.com/everettraven/packageless/releases/latest/download/packageless-linux
 fi
 
+echo "Downloading packageless configuration file"
+curl -L -o ~/.packageless/config.hcl https://github.com/everettraven/packageless/releases/latest/download/config.hcl
+
 echo "Adding packageless to PATH by adding to: ~/."$shell"rc" 
 echo "export PATH=\$PATH:~/bin/packageless" >> $HOME"/."$shell"rc"
