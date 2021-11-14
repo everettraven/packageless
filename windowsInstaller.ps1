@@ -20,4 +20,4 @@ Invoke-WebRequest https://github.com/everettraven/packageless/releases/latest/do
 
 Write-Output "Adding packageless to PATH"
 
-setx PATH "%PATH%;$HOME\bin\packageless"
+setx PATH "%PATH%;$HOME\bin\packageless.exe"

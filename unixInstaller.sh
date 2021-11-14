@@ -29,3 +29,4 @@ curl -L -o ~/.packageless/config.hcl https://github.com/everettraven/packageless
 
 echo "Adding packageless to PATH by adding to: ~/."$shell"rc" 
 echo "export PATH=\$PATH:~/bin/packageless" >> $HOME"/."$shell"rc"
+echo "For changes to take effect, please restart your terminal"
