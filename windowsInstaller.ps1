@@ -14,6 +14,10 @@ Write-Output "Downloading the executable"
 
 Invoke-WebRequest https://github.com/everettraven/packageless/releases/latest/download/packageless-windows -OutFile $HOME\bin\packageless.exe
 
+Write-Output "Downloading packageless configuration file"
+
+Invoke-WebRequest https://github.com/everettraven/packageless/releases/latest/download/config.hcl -OutFile $HOME\.packageless\config.hcl
+
 Write-Output "Adding packageless to PATH"
 
 setx PATH "%PATH%;$HOME\bin\packageless"
