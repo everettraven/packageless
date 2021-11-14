@@ -65,8 +65,8 @@ func TestMain_OsArgs(t *testing.T) {
 		{
 			"Install Test",
 			[]string{"packageless", "install", "python"},
-			true,
-			"Shell: go is currently unsupported.",
+			false,
+			"",
 		},
 		{
 			//We know this one will fail because go test doesn't include tty which the docker command we run uses
@@ -91,8 +91,8 @@ func TestMain_OsArgs(t *testing.T) {
 		{
 			"Uninstall Test",
 			[]string{"packageless", "uninstall", "python"},
-			true,
-			"Shell: go is currently unsupported.",
+			false,
+			"",
 		},
 	}
 
