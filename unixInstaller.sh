@@ -17,7 +17,7 @@ then
 fi
 
 echo "Downloading the executable..."
-if [ "$OSTYPE" = "darwin" ]
+if [ $OSTYPE == *"darwin"* ]
 then
     curl -L -o ~/bin/packageless https://github.com/everettraven/packageless/releases/latest/download/packageless-macos
 else
@@ -30,5 +30,5 @@ echo "Downloading packageless configuration file"
 curl -L -o ~/.packageless/config.hcl https://github.com/everettraven/packageless/releases/latest/download/config.hcl
 
 echo "Adding packageless to PATH by adding to: ~/."$shell"rc" 
-echo "export PATH=\$PATH:~/bin/packageless" >> $HOME"/."$shell"rc"
+echo "export PATH=\$PATH:~/bin/" >> $HOME"/."$shell"rc"
 echo "For changes to take effect, please restart your terminal"
