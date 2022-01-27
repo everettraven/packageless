@@ -3,3 +3,4 @@ python
 packageless.exe
 macros.doskey
 packageless
+*.out

@@ -166,6 +166,44 @@ func TestImageExistError(t *testing.T) {
 	}
 }
 
+//Test ImageExists function when RepoTags is not populated
+func TestImageExistContinueOnEmptyRepoTag(t *testing.T) {
+	//Create the Mock Docker Client
+	dm := NewDockMock()
+
+	//Set the image for testing
+	img := "image:faketag"
+
+	//Set the return images array in the Mock Docker Client
+	dm.ILRet = []types.ImageSummary{
+		// First one should be an empty RepoTags
+		{
+			RepoTags: []string{},
+		},
+		// When image loop continues it should find this one.
+		{
+			RepoTags: []string{"image:faketag"},
+		},
+	}
+
+	//Create a new utility
+	util := NewUtility()
+
+	//Check for the image
+	exists, err := util.ImageExists(img, dm)
+
+	//If an error occurs, the test fails
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//The image should exist in this case
+	if !exists {
+		t.Fatal("ImageExists: Image should exist, but it does not.")
+	}
+
+}
+
 //Test CreateContainer Function
 func TestCreateContainer(t *testing.T) {
 	//Create the Mock Docker Client

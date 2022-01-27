@@ -49,6 +49,12 @@ func (u *Utility) ImageExists(imageID string, cli Client) (bool, error) {
 
 	//Loop through all the images and check if a match is found
 	for _, image := range images {
+
+		// If RepoTags returned isnt populated then skip to the next image
+		if len(image.RepoTags) < 1 {
+			continue
+		}
+
 		if image.RepoTags[0] == imageID {
 			return true, nil
 		}
