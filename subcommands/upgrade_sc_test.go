@@ -961,3 +961,53 @@ func TestUpgradeErrorAtGetListOfInstalledPimConfigs(t *testing.T) {
 		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
 	}
 }
+
+func TestUpgradeErrorAtPimConfigurationFileNotFound(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	mu.PimConfigShouldExist = false
+
+	mcp := &utils.MockCopyTool{}
+
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	ic := NewUpgradeCommand(mu, mcp, config)
+
+	args := []string{"python"}
+
+	err := ic.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = ic.Run()
+
+	expectedErr := "Could not find pim configuration for: " + ic.name + " has it been installed?"
+
+	if err == nil {
+		t.Fatal("Expected the following error: '" + expectedErr + "' but did not receive an error")
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatal("Expected the following error: " + expectedErr + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"FileExists",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+
+}
