@@ -201,6 +201,86 @@ func TestSubCommandUnknownSC(t *testing.T) {
 	}
 }
 
+//Test the SubCommand function if multiple pims passed to install subcommand
+func TestSubCommandInstallMultiple(t *testing.T) {
+	//Create a mock subcommand
+	msc := NewMockSC()
+
+	//Set MockSC Values
+	msc.CmdName = "install"
+
+	sc := "install"
+
+	//Create an argument array
+	args := []string{sc, "python", "git"}
+
+	//Create an array of Runner interface containing the mock subcommand
+	scmds := []Runner{
+		msc,
+	}
+
+	//Run the SubCommand function
+	err := SubCommand(args, scmds)
+
+	//There shouldn't be an error
+	if err != nil {
+		t.Fatalf("SubCommand: Unexpected error: %s", err)
+	}
+}
+
+//Test the SubCommand function if multiple pims passed to uninstall subcommand
+func TestSubCommandUninstallMultiple(t *testing.T) {
+	//Create a mock subcommand
+	msc := NewMockSC()
+
+	//Set MockSC Values
+	msc.CmdName = "uninstall"
+
+	sc := "uninstall"
+
+	//Create an argument array
+	args := []string{sc, "python", "git"}
+
+	//Create an array of Runner interface containing the mock subcommand
+	scmds := []Runner{
+		msc,
+	}
+
+	//Run the SubCommand function
+	err := SubCommand(args, scmds)
+
+	//There shouldn't be an error
+	if err != nil {
+		t.Fatalf("SubCommand: Unexpected error: %s", err)
+	}
+}
+
+func TestSubCommandUpgradeMultiple(t *testing.T) {
+	//Create a mock subcommand
+	msc := NewMockSC()
+
+	//Set MockSC Values
+	msc.CmdName = "upgrade"
+
+	sc := "upgrade"
+
+	//Create an argument array
+	args := []string{sc, "python", "git"}
+
+	//Create an array of Runner interface containing the mock subcommand
+	scmds := []Runner{
+		msc,
+	}
+
+	//Run the SubCommand function
+	err := SubCommand(args, scmds)
+
+	//There shouldn't be an error
+	if err != nil {
+		t.Fatalf("SubCommand: Unexpected error: %s", err)
+	}
+}
+
 func TestLengthArgs(t *testing.T) {
 	//Create a mock subcommand
 	msc := NewMockSC()
@@ -224,3 +304,4 @@ func TestLengthArgs(t *testing.T) {
 		t.Fatalf("SubCommand: Expected to have error: %s | Received No Error", msc.ErrorMsg)
 	}
 }
+

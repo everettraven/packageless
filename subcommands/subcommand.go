@@ -20,15 +20,38 @@ func SubCommand(args []string, scmds []Runner) error {
 
 	subcommand := args[0]
 
+	args = args[1:]
+
 	for _, cmd := range scmds {
 		if cmd.Name() == subcommand {
-			err := cmd.Init(args[1:])
+			//Subcommands that take multiple pims as arguments
+			if subcommand == "install" || subcommand == "upgrade" || subcommand == "uninstall" {
+				//Execute subcommand for each pim in arguments
+				for _, pim := range args {
+					p := []string{pim}
+					err := cmd.Init(p)
 
-			if err != nil {
-				return err
+					if err != nil {
+						return err
+					}
+
+					err = cmd.Run()
+
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				err := cmd.Init(args)
+
+				if err != nil {
+					return err
+				}
+
+				return cmd.Run()
 			}
 
-			return cmd.Run()
+			return nil
 		}
 	}
 
