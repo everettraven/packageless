@@ -255,7 +255,6 @@ func TestSubCommandUninstallMultiple(t *testing.T) {
 	}
 }
 
-//Test the SubCommand function if multiple pims passed to upgrade subcommand
 func TestSubCommandUpgradeMultiple(t *testing.T) {
 	//Create a mock subcommand
 	msc := NewMockSC()
@@ -281,3 +280,28 @@ func TestSubCommandUpgradeMultiple(t *testing.T) {
 		t.Fatalf("SubCommand: Unexpected error: %s", err)
 	}
 }
+
+func TestLengthArgs(t *testing.T) {
+	//Create a mock subcommand
+	msc := NewMockSC()
+
+	//Set the error message
+	msc.ErrorMsg = "Test error is being throw properly if the length of the args variable is < 1"
+
+	//Create an argument array
+	args := []string{}
+
+	//Create an array of Runner interface containing the mock subcommand
+	scmds := []Runner{
+		msc,
+	}
+
+	//Run the SubCommand function
+	err := SubCommand(args, scmds)
+
+	//Should have an error
+	if err == nil {
+		t.Fatalf("SubCommand: Expected to have error: %s | Received No Error", msc.ErrorMsg)
+	}
+}
+
