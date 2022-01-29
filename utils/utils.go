@@ -51,6 +51,7 @@ type Tools interface {
 	FileExists(path string) bool
 	RemoveFile(path string) error
 	GetListOfInstalledPimConfigs(pimConfigDir string) ([]string, error)
+	Getwd() (string, error)
 }
 
 //Utility Tool struct with its functions
@@ -253,6 +254,11 @@ func (u *Utility) GetListOfInstalledPimConfigs(pimConfigDir string) ([]string, e
 	}
 
 	return pimNames, nil
+}
+
+//Getwd returns a rooted path name corresponding to the current directory
+func (u *Utility) Getwd() (string, error) {
+	return os.Getwd()
 }
 
 //Create an interface to house the CopyFiles implementation. This will allow us to make a mock of the CopyFiles Function.

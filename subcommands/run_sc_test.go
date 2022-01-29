@@ -633,3 +633,104 @@ func TestRunFileNotExists(t *testing.T) {
 		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
 	}
 }
+
+func TestRunEmptyVolumePath(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	mu.ImgExist = true
+
+	mu.Pim.Pims[0].Versions[0].Volumes[0].Path = ""
+
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	rc := NewRunCommand(mu, config)
+
+	args := []string{"python"}
+
+	err := rc.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = rc.Run()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"FileExists",
+		"GetHCLBody",
+		"ParseBody",
+		"ImageExists",
+		"Getwd",
+		"RunContainer",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
+
+func TestRunErrorAtGetwd(t *testing.T) {
+	mu := utils.NewMockUtility()
+
+	mu.ImgExist = true
+
+	mu.ErrorAt = "Getwd"
+
+	mu.Pim.Pims[0].Versions[0].Volumes[0].Path = ""
+
+	config := utils.Config{
+		BaseDir:        "~/.packageless/",
+		StartPort:      3000,
+		PortInc:        1,
+		Alias:          true,
+		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
+		PimsConfigDir:  "pims_config/",
+		PimsDir:        "pims/",
+	}
+
+	rc := NewRunCommand(mu, config)
+
+	args := []string{"python"}
+
+	err := rc.Init(args)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = rc.Run()
+
+	if err == nil {
+		t.Fatal("Expected the following error: " + mu.ErrorMsg + " but did not receive an error")
+	}
+
+	if err.Error() != mu.ErrorMsg {
+		t.Fatal("Expected the following error: " + mu.ErrorMsg + "| Received: " + err.Error())
+	}
+
+	//Set a variable with the proper call stack and see if the call stack matches
+	callStack := []string{
+		"FileExists",
+		"GetHCLBody",
+		"ParseBody",
+		"ImageExists",
+		"Getwd",
+	}
+
+	if !reflect.DeepEqual(callStack, mu.Calls) {
+		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
+	}
+}
