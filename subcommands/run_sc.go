@@ -3,7 +3,6 @@ package subcommands
 import (
 	"errors"
 	"flag"
-	"os"
 	"strconv"
 	"strings"
 
@@ -153,7 +152,7 @@ func (rc *RunCommand) Run() error {
 		if vol.Path != "" {
 			volumes = append(volumes, pimDir+vol.Path+":"+vol.Mount)
 		} else {
-			sourcePath, err := os.Getwd()
+			sourcePath, err := rc.tools.Getwd()
 
 			if err != nil {
 				return err

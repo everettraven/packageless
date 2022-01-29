@@ -399,6 +399,17 @@ func (mu *MockUtility) GetListOfInstalledPimConfigs(pimConfigDir string) ([]stri
 	return mu.InstalledPims, nil
 }
 
+//Mock of the Getwd Utility function
+func (mu *MockUtility) Getwd() (dir string, err error) {
+	mu.Calls = append(mu.Calls, "Getwd")
+
+	if mu.ErrorAt == "Getwd" {
+		return "", errors.New(mu.ErrorMsg)
+	}
+
+	return os.Getwd()
+}
+
 //Create a Mock for the Docker client
 type DockMock struct {
 	//Variable to know what function to return an error from
