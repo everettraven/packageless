@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -137,6 +138,10 @@ func (u *Utility) RunContainer(image string, ports []string, volumes []string, c
 
 	// add the volumes to the command
 	for _, vol := range volumes {
+		if vErr := u.validateRunContainerVolume(vol); vErr != nil {
+			return "", vErr
+		}
+
 		splitVol := strings.Split(vol, ":")
 		var source string
 		var target string
@@ -189,6 +194,16 @@ func (u *Utility) RunContainer(image string, ports []string, volumes []string, c
 
 	return cmdStr, nil
 
+}
+
+func (u *Utility) validateRunContainerVolume(volume string) error {
+	splitVolume := strings.Split(volume, ":")
+
+	if len(splitVolume) != 2 && len(splitVolume) != 3 {
+		return fmt.Errorf("utils: Invalid split volume %d", len(splitVolume))
+	}
+
+	return nil
 }
 
 //RemoveImage removes the image with the given name from local Docker
