@@ -200,7 +200,7 @@ func (u *Utility) validateRunContainerVolume(volume string) error {
 	splitVolume := strings.Split(volume, ":")
 
 	if len(splitVolume) != 2 && len(splitVolume) != 3 {
-		return fmt.Errorf("utils: Invalid split volume %d", len(splitVolume))
+		return fmt.Errorf("utils: Invalid split volume of length %d", len(splitVolume))
 	}
 
 	return nil

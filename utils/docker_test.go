@@ -575,7 +575,7 @@ func TestRunContainer(t *testing.T) {
 		util := NewUtility()
 
 		//Run the RunContainer function and assert the error
-		exErr := errors.New("utils: Invalid split volume 1")
+		exErr := errors.New("utils: Invalid split volume of length 1")
 		_, err := util.RunContainer(image, ports, volumes, cName, args)
 		if err.Error() != exErr.Error() {
 			t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
@@ -660,7 +660,7 @@ func TestRunContainer(t *testing.T) {
 		util := NewUtility()
 
 		//Run the RunContainer function and assert the error
-		exErr := errors.New("utils: Invalid split volume 4")
+		exErr := errors.New("utils: Invalid split volume of length 4")
 		_, err := util.RunContainer(image, ports, volumes, cName, args)
 		if err.Error() != exErr.Error() {
 			t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
