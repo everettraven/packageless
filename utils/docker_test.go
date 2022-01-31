@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -551,6 +552,118 @@ func TestRunContainerWithArgs(t *testing.T) {
 		t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmd)
 	}
 
+}
+
+func TestRunContainerReturnErrorWhenSplitVolumeIs1(t *testing.T) {
+	//Set the image to be run
+	image := "image"
+
+	//Set the ports
+	ports := []string{"3000:3000"}
+
+	//Set the volumes
+	volumes := []string{"/path1"}
+
+	//Set the container name
+	cName := "test"
+
+	//Set the empty args
+	args := []string{}
+
+	//Create the util tool
+	util := NewUtility()
+
+	//Run the RunContainer function and assert the error
+	exErr := errors.New("utils: Invalid split volume of length 1")
+	_, err := util.RunContainer(image, ports, volumes, cName, args)
+	if err.Error() != exErr.Error() {
+		t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
+	}
+}
+
+func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs2(t *testing.T) {
+	//Set the image to be run
+	image := "image"
+
+	//Set the ports
+	ports := []string{"3000:3000"}
+
+	//Set the volumes
+	volumes := []string{"/path1:/path2"}
+
+	//Set the container name
+	cName := "test"
+
+	//Set the empty args
+	args := []string{}
+
+	//Set the expected command
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
+
+	//Create the util tool
+	util := NewUtility()
+
+	//Run the RunContainer function and ignore any errors since we just want to make sure the cmdStr is built properly
+	cmdStr, _ := util.RunContainer(image, ports, volumes, cName, args)
+	if cmdStr != exCmd {
+		t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmdStr)
+	}
+}
+
+func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs3(t *testing.T) {
+	//Set the image to be run
+	image := "image"
+
+	//Set the ports
+	ports := []string{"3000:3000"}
+
+	//Set the volumes
+	volumes := []string{"/path1:/path2:/path3"}
+
+	//Set the container name
+	cName := "test"
+
+	//Set the empty args
+	args := []string{}
+
+	//Set the expected command
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
+
+	//Create the util tool
+	util := NewUtility()
+
+	//Run the RunContainer function and ignore any errors since we just want to make sure the cmdStr is built properly
+	cmdStr, _ := util.RunContainer(image, ports, volumes, cName, args)
+	if cmdStr != exCmd {
+		t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmdStr)
+	}
+}
+
+func TestRunContainerReturnErrorWhenSplitVolumeIs4(t *testing.T) {
+	//Set the image to be run
+	image := "image"
+
+	//Set the ports
+	ports := []string{"3000:3000"}
+
+	//Set the volumes
+	volumes := []string{"/path1:/path2:/path3:/path4"}
+
+	//Set the container name
+	cName := "test"
+
+	//Set the empty args
+	args := []string{}
+
+	//Create the util tool
+	util := NewUtility()
+
+	//Run the RunContainer function and assert the error
+	exErr := errors.New("utils: Invalid split volume of length 4")
+	_, err := util.RunContainer(image, ports, volumes, cName, args)
+	if err.Error() != exErr.Error() {
+		t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
+	}
 }
 
 //Test RemoveImage Function
