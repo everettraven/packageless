@@ -554,118 +554,116 @@ func TestRunContainerWithArgs(t *testing.T) {
 
 }
 
-func TestRunContainer(t *testing.T) {
-	t.Run("ShouldReturnError_WhenSplitVolumeIs1", func(t *testing.T) {
-		//Set the image to be run
-		image := "image"
+func TestRunContainerReturnErrorWhenSplitVolumeIs1(t *testing.T) {
+	//Set the image to be run
+	image := "image"
 
-		//Set the ports
-		ports := []string{"3000:3000"}
+	//Set the ports
+	ports := []string{"3000:3000"}
 
-		//Set the volumes
-		volumes := []string{"/path1"}
+	//Set the volumes
+	volumes := []string{"/path1"}
 
-		//Set the container name
-		cName := "test"
+	//Set the container name
+	cName := "test"
 
-		//Set the empty args
-		args := []string{}
+	//Set the empty args
+	args := []string{}
 
-		//Create the util tool
-		util := NewUtility()
+	//Create the util tool
+	util := NewUtility()
 
-		//Run the RunContainer function and assert the error
-		exErr := errors.New("utils: Invalid split volume of length 1")
-		_, err := util.RunContainer(image, ports, volumes, cName, args)
-		if err.Error() != exErr.Error() {
-			t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
-		}
-	})
+	//Run the RunContainer function and assert the error
+	exErr := errors.New("utils: Invalid split volume of length 1")
+	_, err := util.RunContainer(image, ports, volumes, cName, args)
+	if err.Error() != exErr.Error() {
+		t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
+	}
+}
 
-	t.Run("ShouldReturnCorrectCmdStr_WhenSplitVolumeIs2", func(t *testing.T) {
-		//Set the image to be run
-		image := "image"
+func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs2(t *testing.T) {
+	//Set the image to be run
+	image := "image"
 
-		//Set the ports
-		ports := []string{"3000:3000"}
+	//Set the ports
+	ports := []string{"3000:3000"}
 
-		//Set the volumes
-		volumes := []string{"/path1:/path2"}
+	//Set the volumes
+	volumes := []string{"/path1:/path2"}
 
-		//Set the container name
-		cName := "test"
+	//Set the container name
+	cName := "test"
 
-		//Set the empty args
-		args := []string{}
+	//Set the empty args
+	args := []string{}
 
-		//Set the expected command
-		exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
+	//Set the expected command
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
 
-		//Create the util tool
-		util := NewUtility()
+	//Create the util tool
+	util := NewUtility()
 
-		//Run the RunContainer function and ignore any errors since we just want to make sure the cmd is built properly
-		cmd, _ := util.RunContainer(image, ports, volumes, cName, args)
-		if cmd != exCmd {
-			t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmd)
-		}
-	})
+	//Run the RunContainer function and ignore any errors since we just want to make sure the cmdStr is built properly
+	cmdStr, _ := util.RunContainer(image, ports, volumes, cName, args)
+	if cmdStr != exCmd {
+		t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmdStr)
+	}
+}
 
-	t.Run("ShouldReturnCorrectCmdStr_WhenSplitVolumeIs3", func(t *testing.T) {
-		//Set the image to be run
-		image := "image"
+func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs3(t *testing.T) {
+	//Set the image to be run
+	image := "image"
 
-		//Set the ports
-		ports := []string{"3000:3000"}
+	//Set the ports
+	ports := []string{"3000:3000"}
 
-		//Set the volumes
-		volumes := []string{"/path1:/path2:/path3"}
+	//Set the volumes
+	volumes := []string{"/path1:/path2:/path3"}
 
-		//Set the container name
-		cName := "test"
+	//Set the container name
+	cName := "test"
 
-		//Set the empty args
-		args := []string{}
+	//Set the empty args
+	args := []string{}
 
-		//Set the expected command
-		exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
+	//Set the expected command
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
 
-		//Create the util tool
-		util := NewUtility()
+	//Create the util tool
+	util := NewUtility()
 
-		//Run the RunContainer function and ignore any errors since we just want to make sure the cmd is built properly
-		cmd, _ := util.RunContainer(image, ports, volumes, cName, args)
-		if cmd != exCmd {
-			t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmd)
-		}
-	})
+	//Run the RunContainer function and ignore any errors since we just want to make sure the cmdStr is built properly
+	cmdStr, _ := util.RunContainer(image, ports, volumes, cName, args)
+	if cmdStr != exCmd {
+		t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmdStr)
+	}
+}
 
-	t.Run("ShouldReturnError_WhenSplitVolumeIs4", func(t *testing.T) {
-		//Set the image to be run
-		image := "image"
+func TestRunContainerReturnErrorWhenSplitVolumeIs4(t *testing.T) {
+	//Set the image to be run
+	image := "image"
 
-		//Set the ports
-		ports := []string{"3000:3000"}
+	//Set the ports
+	ports := []string{"3000:3000"}
 
-		//Set the volumes
-		volumes := []string{"/path1:/path2:/path3:/path4"}
+	//Set the volumes
+	volumes := []string{"/path1:/path2:/path3:/path4"}
 
-		//Set the container name
-		cName := "test"
+	//Set the container name
+	cName := "test"
 
-		//Set the empty args
-		args := []string{}
+	//Set the empty args
+	args := []string{}
 
-		//Create the util tool
-		util := NewUtility()
+	//Create the util tool
+	util := NewUtility()
 
-		//Run the RunContainer function and assert the error
-		exErr := errors.New("utils: Invalid split volume of length 4")
-		_, err := util.RunContainer(image, ports, volumes, cName, args)
-		if err.Error() != exErr.Error() {
-			t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
-		}
-	})
+	//Run the RunContainer function and assert the error
+	exErr := errors.New("utils: Invalid split volume of length 4")
+	_, err := util.RunContainer(image, ports, volumes, cName, args)
+	if err.Error() != exErr.Error() {
+		t.Fatalf("RunContainer: Expected err: %s | Received err: %s", exErr.Error(), err.Error())
+	}
 }
 
 //Test RemoveImage Function
