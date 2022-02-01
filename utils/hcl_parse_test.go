@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hclparse"
 )
 
@@ -289,31 +290,8 @@ func TestParseBodyPackageNoCopy(t *testing.T) {
 }
 
 func TestParseBodyReturnErrorWhenTypeIsUnexpected(t *testing.T) {
-	//Create the HCL byte array
-	hcl := []byte(`base_dir="./"
-	start_port=3000
-	port_increment=1
-	alias=true
-	repository_host="host.com"
-	pims_config_dir="pims_config"
-	pims_dir = "pims"`)
-
-	//Create the parser
-	parser := hclparse.NewParser()
-
-	//Parse the byte array
-	f, diags := parser.ParseHCL(hcl, "config_test")
-
-	//If error it fails
-	if diags.HasErrors() {
-		t.Fatal(diags.Error())
-	}
-
-	//Create a new utility
-	util := NewUtility()
-
 	//Parse the HCL Body
-	_, err := util.ParseBody(f.Body, nil)
+	_, err := NewUtility().ParseBody(hcl.EmptyBody(), nil)
 
 	//Return error because of invalid type (nil)
 	if err == nil {
