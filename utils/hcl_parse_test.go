@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hclparse"
 )
 
@@ -285,6 +286,21 @@ func TestParseBodyPackageNoCopy(t *testing.T) {
 	//Make sure the copies array is empty
 	if len(version.Copies) > 0 {
 		t.Fatal("pim # of copies should be '0' | Received: " + strconv.Itoa(len(version.Copies)))
+	}
+}
+
+func TestParseBodyReturnErrorWhenTypeIsUnexpected(t *testing.T) {
+	//Parse the HCL Body
+	_, err := NewUtility().ParseBody(hcl.EmptyBody(), nil)
+
+	//Return error because of invalid type (nil)
+	if err == nil {
+		t.Fatal("ParseBody: Expected to receive an error, but did not receive one.")
+	}
+
+	expectedErrMsg := "Unexpected type passed into the HCL parse function"
+	if err.Error() != expectedErrMsg {
+		t.Fatal("ParseBody: Expected Error: " + expectedErrMsg + " | Received Error: " + err.Error())
 	}
 }
 
