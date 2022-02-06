@@ -1,0 +1,36 @@
+# GitHub Actions CI/CD to check packageless test coverage
+name: coverage
+
+# Run the action on push to main and pull requests
+on: [push, pull_request, workflow_dispatch]
+
+# Set up the actual workflow jobs
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the Repo for testing
+      - uses: actions/checkout@v2
+      # Get Docker setup
+      - uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: "20.10"
+          docker_channel: stable
+      # Set up Go
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.4
+      
+      # Run the go tests
+      - name: Run tests with coverage
+        run: go test -short -race -covermode=atomic -coverprofile=./coverage/reports/coverage.out ./...
+      
+      # Upload to CodeCov
+      - name: Upload coverage to CodeCov
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./coverage/reports/
+          flags: unittests
+          name: codecov-umbrella
+          verbose: true
