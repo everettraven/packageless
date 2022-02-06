@@ -101,11 +101,19 @@ func TestUpgradeFlow(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
+		"RenderInfoMarkdown",
 		"UpgradeDir",
+		"RenderInfoMarkdown",
 		"CreateContainer",
+		"RenderInfoMarkdown",
 		"CopyFromContainer",
+		"RenderInfoMarkdown",
 		"RemoveContainer",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -386,6 +394,8 @@ func TestUpgradeErrorAtPullImage(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
 	}
 
@@ -441,7 +451,10 @@ func TestUpgradeErrorAtUpgradeDir(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
+		"RenderInfoMarkdown",
 		"UpgradeDir",
 	}
 
@@ -497,8 +510,12 @@ func TestUpgradeErrorAtCreateContainer(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
+		"RenderInfoMarkdown",
 		"UpgradeDir",
+		"RenderInfoMarkdown",
 		"CreateContainer",
 	}
 
@@ -554,9 +571,14 @@ func TestUpgradeErrorAtCopyFromContainer(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
+		"RenderInfoMarkdown",
 		"UpgradeDir",
+		"RenderInfoMarkdown",
 		"CreateContainer",
+		"RenderInfoMarkdown",
 		"CopyFromContainer",
 	}
 
@@ -612,10 +634,16 @@ func TestUpgradeErrorAtRemoveContainer(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
+		"RenderInfoMarkdown",
 		"UpgradeDir",
+		"RenderInfoMarkdown",
 		"CreateContainer",
+		"RenderInfoMarkdown",
 		"CopyFromContainer",
+		"RenderInfoMarkdown",
 		"RemoveContainer",
 	}
 
@@ -715,24 +743,41 @@ func TestUpgradeNoPackageWithTwoPacks(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"RenderInfoMarkdown",
 		"GetListOfInstalledPimConfigs",
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
+		"RenderInfoMarkdown",
 		"UpgradeDir",
+		"RenderInfoMarkdown",
 		"CreateContainer",
+		"RenderInfoMarkdown",
 		"CopyFromContainer",
+		"RenderInfoMarkdown",
 		"RemoveContainer",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		//Repeat the cycle from GetHCLBody since we should be reading a new pim file
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"PullImage",
+		"RenderInfoMarkdown",
 		"UpgradeDir",
+		"RenderInfoMarkdown",
 		"CreateContainer",
+		"RenderInfoMarkdown",
 		"CopyFromContainer",
+		"RenderInfoMarkdown",
 		"RemoveContainer",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -954,6 +999,7 @@ func TestUpgradeErrorAtGetListOfInstalledPimConfigs(t *testing.T) {
 
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
+		"RenderInfoMarkdown",
 		"GetListOfInstalledPimConfigs",
 	}
 

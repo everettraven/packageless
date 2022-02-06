@@ -52,6 +52,8 @@ type Tools interface {
 	RemoveFile(path string) error
 	GetListOfInstalledPimConfigs(pimConfigDir string) ([]string, error)
 	Getwd() (string, error)
+	RenderInfoMarkdown(input string)
+	RenderErrorMarkdown(input string)
 }
 
 //Utility Tool struct with its functions

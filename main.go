@@ -13,7 +13,8 @@ func main() {
 	exitCode, exitErr := wrappedMain()
 
 	if exitErr != nil {
-		fmt.Println(exitErr)
+		errString := "# ERROR\n" + "**Encountered an error:** *%s*\n"
+		utils.NewUtility().RenderErrorMarkdown(fmt.Sprintf(errString, exitErr.Error()))
 	}
 
 	os.Exit(exitCode)
@@ -64,7 +65,7 @@ func wrappedMain() (int, error) {
 		subcommands.NewUninstallCommand(util, config),
 		subcommands.NewUpgradeCommand(util, cp, config),
 		subcommands.NewRunCommand(util, config),
-		subcommands.NewVersionCommand(),
+		subcommands.NewVersionCommand(util),
 		subcommands.NewUpdateCommand(util, config),
 	}
 

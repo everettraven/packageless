@@ -35,11 +35,7 @@ func SubCommand(args []string, scmds []Runner) error {
 						return err
 					}
 
-					err = cmd.Run()
-
-					if err != nil {
-						return err
-					}
+					return cmd.Run()
 				}
 			} else {
 				err := cmd.Init(args)
