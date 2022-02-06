@@ -145,7 +145,7 @@ func (uc *UninstallCommand) Run() error {
 		return errors.New("pim " + pim.Name + " with version '" + version.Version + "' is not installed.")
 	}
 
-	uc.tools.RenderInfoMarkdown(fmt.Sprintf("- *Removing %s*", pim.Name+":"+version.Version))
+	uc.tools.RenderInfoMarkdown(fmt.Sprintf("**Uninstalling**: *%s*", pim.Name+":"+version.Version))
 
 	//Check for the directories that correspond to this pims volumes
 	uc.tools.RenderInfoMarkdown("- *Removing pim directories*")
@@ -166,7 +166,7 @@ func (uc *UninstallCommand) Run() error {
 		return err
 	}
 
-	uc.tools.RenderInfoMarkdown("- *Removing Image*")
+	uc.tools.RenderInfoMarkdown("- *Removing image*")
 
 	//Remove the image
 	err = uc.tools.RemoveImage(version.Image, cli)

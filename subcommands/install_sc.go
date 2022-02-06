@@ -161,7 +161,7 @@ func (ic *InstallCommand) Run() error {
 
 	ic.tools.RenderInfoMarkdown(fmt.Sprintf("**Installing**: *%s*", pim.Name+":"+version.Version))
 	//Pull the image down from Docker Hub
-	ic.tools.RenderInfoMarkdown(fmt.Sprintf("- *Pulling Image %s*", version.Image))
+	ic.tools.RenderInfoMarkdown(fmt.Sprintf("- *Pulling image %s*", version.Image))
 	err = ic.tools.PullImage(version.Image, cli)
 
 	if err != nil {
