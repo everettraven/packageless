@@ -1,6 +1,6 @@
 ![Build Status](https://github.com/everettraven/packageless/workflows/build/badge.svg)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/everettraven/packageless.svg)
-![CodeCov](https://codecov.io/gh/everettraven/packageless/branch/main/graph/badge.svg?token=KJ7XJIYXRK)](https://codecov.io/gh/everettraven/packageless)
+[![CodeCov](https://codecov.io/gh/everettraven/packageless/branch/main/graph/badge.svg?token=KJ7XJIYXRK)](https://codecov.io/gh/everettraven/packageless)
 
 ![Social Image](.github/images/dark_mode_social.png)
 
