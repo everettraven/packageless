@@ -3,8 +3,6 @@ package subcommands
 import (
 	"errors"
 	"fmt"
-
-	"github.com/everettraven/packageless/utils"
 )
 
 //Runner - Interface to enable easy interactions with the different subcommand objects
@@ -16,7 +14,6 @@ type Runner interface {
 
 //SubCommand - Helper function that handles setting up and running subcommands
 func SubCommand(args []string, scmds []Runner) error {
-	utils.NewUtility().RenderInfoMarkdown("# packageless")
 	if len(args) < 1 {
 		return errors.New("A subcommand must be passed")
 	}
