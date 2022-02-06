@@ -16,6 +16,7 @@ type Runner interface {
 
 //SubCommand - Helper function that handles setting up and running subcommands
 func SubCommand(args []string, scmds []Runner) error {
+	utils.NewUtility().RenderInfoMarkdown("# packageless")
 	if len(args) < 1 {
 		return errors.New("A subcommand must be passed")
 	}
@@ -37,7 +38,6 @@ func SubCommand(args []string, scmds []Runner) error {
 						return err
 					}
 
-					utils.NewUtility().RenderInfoMarkdown("# packageless")
 					return cmd.Run()
 				}
 			} else {
@@ -47,7 +47,6 @@ func SubCommand(args []string, scmds []Runner) error {
 					return err
 				}
 
-				utils.NewUtility().RenderInfoMarkdown("# packageless")
 				return cmd.Run()
 			}
 
