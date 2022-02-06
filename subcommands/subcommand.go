@@ -3,6 +3,8 @@ package subcommands
 import (
 	"errors"
 	"fmt"
+
+	"github.com/everettraven/packageless/utils"
 )
 
 //Runner - Interface to enable easy interactions with the different subcommand objects
@@ -35,11 +37,8 @@ func SubCommand(args []string, scmds []Runner) error {
 						return err
 					}
 
-					err = cmd.Run()
-
-					if err != nil {
-						return err
-					}
+					utils.NewUtility().RenderInfoMarkdown("# packageless")
+					return cmd.Run()
 				}
 			} else {
 				err := cmd.Init(args)
@@ -48,6 +47,7 @@ func SubCommand(args []string, scmds []Runner) error {
 					return err
 				}
 
+				utils.NewUtility().RenderInfoMarkdown("# packageless")
 				return cmd.Run()
 			}
 

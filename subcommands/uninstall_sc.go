@@ -145,10 +145,10 @@ func (uc *UninstallCommand) Run() error {
 		return errors.New("pim " + pim.Name + " with version '" + version.Version + "' is not installed.")
 	}
 
-	fmt.Println("Removing", pim.Name+":"+version.Version)
+	uc.tools.RenderInfoMarkdown(fmt.Sprintf("- *Removing %s*", pim.Name+":"+version.Version))
 
 	//Check for the directories that correspond to this pims volumes
-	fmt.Println("Removing pim directories")
+	uc.tools.RenderInfoMarkdown("- *Removing pim directories*")
 
 	//Check the volumes and remove the directories if they exist
 	for _, vol := range version.Volumes {
@@ -166,7 +166,7 @@ func (uc *UninstallCommand) Run() error {
 		return err
 	}
 
-	fmt.Println("Removing Image")
+	uc.tools.RenderInfoMarkdown("- *Removing Image*")
 
 	//Remove the image
 	err = uc.tools.RemoveImage(version.Image, cli)
@@ -187,7 +187,7 @@ func (uc *UninstallCommand) Run() error {
 
 	if uc.config.Alias {
 		//Remove aliases
-		fmt.Println("Removing Alias")
+		uc.tools.RenderInfoMarkdown("- *Removing Alias*")
 
 		if runtime.GOOS == "windows" {
 			if version.Version != "latest" {
@@ -207,6 +207,9 @@ func (uc *UninstallCommand) Run() error {
 			return err
 		}
 	}
+
+	uc.tools.RenderInfoMarkdown("***")
+	uc.tools.RenderInfoMarkdown(fmt.Sprintf("*%s* **successfully uninstalled**", pim.Name))
 
 	return nil
 }

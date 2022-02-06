@@ -89,8 +89,11 @@ func TestUpdateNoArgsFlow(t *testing.T) {
 	}
 
 	callStack := []string{
+		"RenderInfoMarkdown",
 		"GetListOfInstalledPimConfigs",
+		"RenderInfoMarkdown",
 		"FetchPimConfig",
+		"RenderInfoMarkdown",
 		"FetchPimConfig",
 	}
 
@@ -138,6 +141,7 @@ func TestUpdateArgsFlow(t *testing.T) {
 
 	callStack := []string{
 		"GetListOfInstalledPimConfigs",
+		"RenderInfoMarkdown",
 		"FetchPimConfig",
 	}
 
@@ -241,63 +245,11 @@ func TestUpdateErrorAtFetchPimConfig(t *testing.T) {
 	//Set a variable with the proper call stack and see if the call stack matches
 	callStack := []string{
 		"GetListOfInstalledPimConfigs",
+		"RenderInfoMarkdown",
 		"FetchPimConfig",
 	}
 
 	if !reflect.DeepEqual(callStack, mu.Calls) {
 		t.Fatalf("Call Stack does not match the expected call stack. Call Stack: %v | Expected Call Stack: %v", mu.Calls, callStack)
 	}
-}
-
-func ExampleUpdateNoArgs() {
-	mu := utils.NewMockUtility()
-
-	config := utils.Config{
-		BaseDir:        "~/.packageless/",
-		StartPort:      3000,
-		PortInc:        1,
-		Alias:          true,
-		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
-		PimsConfigDir:  "pims_config/",
-		PimsDir:        "pims/",
-	}
-
-	mu.InstalledPims = append(mu.InstalledPims, "python")
-
-	updateCommand := NewUpdateCommand(mu, config)
-
-	args := []string{}
-
-	updateCommand.Init(args)
-	updateCommand.Run()
-
-	// Output:
-	// No pim specified, updating all currently installed pim configurations.
-	// Updating pim: python
-}
-
-func ExampleUpdateArgs() {
-	mu := utils.NewMockUtility()
-
-	config := utils.Config{
-		BaseDir:        "~/.packageless/",
-		StartPort:      3000,
-		PortInc:        1,
-		Alias:          true,
-		RepositoryHost: "https://raw.githubusercontent.com/everettraven/packageless-pims/main/pims/",
-		PimsConfigDir:  "pims_config/",
-		PimsDir:        "pims/",
-	}
-
-	mu.InstalledPims = []string{"python", "another"}
-
-	updateCommand := NewUpdateCommand(mu, config)
-
-	args := []string{"python"}
-
-	updateCommand.Init(args)
-	updateCommand.Run()
-
-	// Output:
-	// Updating pim: python
 }

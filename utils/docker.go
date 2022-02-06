@@ -30,8 +30,9 @@ func (u *Utility) PullImage(name string, cli Client) error {
 	//Close the output buffer after the function exits
 	defer out.Close()
 
-	//Copy the output to the screen
-	io.Copy(os.Stdout, out)
+	//Copy the output of the command to nothing
+	//This seems to be the best way of ensuring that the image is pulled before exiting the function
+	io.Copy(io.Discard, out)
 
 	//No errors
 	return nil
@@ -145,10 +146,12 @@ func (u *Utility) RunContainer(image string, ports []string, volumes []string, c
 		splitVol := strings.Split(vol, ":")
 		var source string
 		var target string
+		var options string
 
 		if len(splitVol) == 3 {
-			source = strings.Join(splitVol[:2], ":")
-			target = splitVol[2]
+			source = splitVol[0]
+			target = splitVol[1]
+			options = ":" + splitVol[2]
 		} else {
 			source = splitVol[0]
 			target = splitVol[1]
@@ -160,7 +163,7 @@ func (u *Utility) RunContainer(image string, ports []string, volumes []string, c
 			return "", err
 		}
 
-		cmdStr += "-v " + source + ":" + target + " "
+		cmdStr += "-v " + source + ":" + target + options + " "
 	}
 
 	// add the image name and the arguments

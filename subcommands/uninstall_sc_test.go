@@ -225,9 +225,15 @@ func TestUninstallFlow(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"RemoveDir",
+		"RenderInfoMarkdown",
 		"RemoveImage",
+		"RenderInfoMarkdown",
 		"RemoveAlias",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 	}
 
 	//If the call stack doesn't match the test fails
@@ -470,6 +476,8 @@ func TestUninstallErrorAtRemoveDir(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"RemoveDir",
 	}
 
@@ -522,8 +530,12 @@ func TestUninstallErrorAtRemoveAlias(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"RemoveDir",
+		"RenderInfoMarkdown",
 		"RemoveImage",
+		"RenderInfoMarkdown",
 		"RemoveAlias",
 	}
 
@@ -576,7 +588,10 @@ func TestUninstallErrorAtRemoveImage(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"RemoveDir",
+		"RenderInfoMarkdown",
 		"RemoveImage",
 	}
 
@@ -620,8 +635,13 @@ func TestUninstallAliasFalse(t *testing.T) {
 		"GetHCLBody",
 		"ParseBody",
 		"ImageExists",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 		"RemoveDir",
+		"RenderInfoMarkdown",
 		"RemoveImage",
+		"RenderInfoMarkdown",
+		"RenderInfoMarkdown",
 	}
 
 	//If the call stack doesn't match the test fails

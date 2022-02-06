@@ -3,6 +3,8 @@ package subcommands
 import (
 	"flag"
 	"fmt"
+
+	"github.com/everettraven/packageless/utils"
 )
 
 var version = "v0.0.0"
@@ -10,13 +12,16 @@ var version = "v0.0.0"
 type VersionCommand struct {
 	//FlagSet for the version command
 	fs *flag.FlagSet
+
+	tools utils.Tools
 }
 
 //Instantiation method for a new VersionCommand
-func NewVersionCommand() *VersionCommand {
+func NewVersionCommand(tools utils.Tools) *VersionCommand {
 	//Create a new InstallCommand and set the FlagSet
 	vc := &VersionCommand{
-		fs: flag.NewFlagSet("version", flag.ContinueOnError),
+		fs:    flag.NewFlagSet("version", flag.ContinueOnError),
+		tools: tools,
 	}
 
 	return vc
@@ -35,6 +40,6 @@ func (vc *VersionCommand) Init(args []string) error {
 //Run the command, this particular command should be a
 //simple print of the value of the version variable
 func (vc *VersionCommand) Run() error {
-	fmt.Println("Packageless Version: " + version)
+	vc.tools.RenderInfoMarkdown(fmt.Sprintf("**Packageless Version**: *%s*", version))
 	return nil
 }

@@ -39,7 +39,7 @@ func (uc *UpdateCommand) Name() string {
 //Initialize the command, for this particular subcommand we should just do nothing
 func (uc *UpdateCommand) Init(args []string) error {
 	if len(args) <= 0 {
-		fmt.Println("No pim specified, updating all currently installed pim configurations.")
+		uc.tools.RenderInfoMarkdown("*No pim specified, updating all currently installed pim configurations*")
 	} else {
 		uc.name = args[0]
 	}
@@ -67,7 +67,7 @@ func (uc *UpdateCommand) Run() error {
 			}
 		}
 
-		fmt.Println("Updating pim: " + pim)
+		uc.tools.RenderInfoMarkdown(fmt.Sprintf("**Updating pim**: *%s*", pim))
 		err = uc.tools.FetchPimConfig(uc.config.RepositoryHost, pim, pimConfigDir)
 		if err != nil {
 			return errors.New("Encountered an error while trying to fetch the latest pim configuration file for pim '" + pim + "': " + err.Error())

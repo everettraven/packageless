@@ -487,7 +487,7 @@ func TestRunContainerNoArgs(t *testing.T) {
 	}
 
 	//Set the volumes
-	volumes := []string{absPath + ":/another/path"}
+	volumes := []string{"/a/path:/another/path"}
 
 	//Set the container name
 	cName := "test"
@@ -496,7 +496,8 @@ func TestRunContainerNoArgs(t *testing.T) {
 	args := []string{}
 
 	//Set the expected command
-	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
+	paths := strings.Split(volumes[0], ":")
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + absPath + ":" + paths[1] + " " + image + " "
 
 	//Create the util tool
 	util := NewUtility()
@@ -528,7 +529,7 @@ func TestRunContainerWithArgs(t *testing.T) {
 	}
 
 	//Set the volumes
-	volumes := []string{absPath + ":/another/path"}
+	volumes := []string{"/a/path:/another/path"}
 
 	//Set the container name
 	cName := "test"
@@ -539,7 +540,8 @@ func TestRunContainerWithArgs(t *testing.T) {
 	argStr := strings.Join(args, " ")
 
 	//Set the expected command
-	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " " + argStr
+	paths := strings.Split(volumes[0], ":")
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + absPath + ":" + paths[1] + " " + image + " " + argStr
 
 	//Create the util tool
 	util := NewUtility()
@@ -589,6 +591,12 @@ func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs2(t *testing.T) {
 	ports := []string{"3000:3000"}
 
 	//Set the volumes
+	path, err := filepath.Abs("/path1")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	volumes := []string{"/path1:/path2"}
 
 	//Set the container name
@@ -598,13 +606,21 @@ func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs2(t *testing.T) {
 	args := []string{}
 
 	//Set the expected command
-	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
+	paths := strings.Split(volumes[0], ":")
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + path + ":" + paths[1] + " " + image + " "
 
 	//Create the util tool
 	util := NewUtility()
 
 	//Run the RunContainer function and ignore any errors since we just want to make sure the cmdStr is built properly
-	cmdStr, _ := util.RunContainer(image, ports, volumes, cName, args)
+	cmdStr, err := util.RunContainer(image, ports, volumes, cName, args)
+
+	//When running the docker command, it is expected to return an
+	//error of exit status 1 because no TTY was mounted. If a different error occurs, fail.
+	if err != nil && err.Error() != "exit status 1" {
+		t.Fatal(err)
+	}
+
 	if cmdStr != exCmd {
 		t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmdStr)
 	}
@@ -618,6 +634,12 @@ func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs3(t *testing.T) {
 	ports := []string{"3000:3000"}
 
 	//Set the volumes
+	path, err := filepath.Abs("/path1")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	volumes := []string{"/path1:/path2:/path3"}
 
 	//Set the container name
@@ -627,13 +649,18 @@ func TestRunContainerReturnCorrectCmdStrWhenSplitVolumeIs3(t *testing.T) {
 	args := []string{}
 
 	//Set the expected command
-	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + volumes[0] + " " + image + " "
+	paths := strings.Split(volumes[0], ":")
+	exCmd := "docker run -it --rm --name " + cName + " -p " + ports[0] + " -v " + path + ":" + paths[1] + ":" + paths[2] + " " + image + " "
 
 	//Create the util tool
 	util := NewUtility()
 
 	//Run the RunContainer function and ignore any errors since we just want to make sure the cmdStr is built properly
-	cmdStr, _ := util.RunContainer(image, ports, volumes, cName, args)
+	cmdStr, err := util.RunContainer(image, ports, volumes, cName, args)
+
+	if err != nil && err.Error() != "exit status 1" {
+		t.Fatal(err)
+	}
 	if cmdStr != exCmd {
 		t.Fatalf("RunContainer: Expected CMD: %s | Received CMD: %s", exCmd, cmdStr)
 	}

@@ -159,15 +159,16 @@ func (ic *InstallCommand) Run() error {
 		return errors.New("pim " + pim.Name + " is already installed")
 	}
 
-	fmt.Println("Installing", pim.Name+":"+version.Version)
+	ic.tools.RenderInfoMarkdown(fmt.Sprintf("**Installing**: *%s*", pim.Name+":"+version.Version))
 	//Pull the image down from Docker Hub
+	ic.tools.RenderInfoMarkdown(fmt.Sprintf("- *Pulling Image %s*", version.Image))
 	err = ic.tools.PullImage(version.Image, cli)
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Creating pim directories")
+	ic.tools.RenderInfoMarkdown("- *Creating pim directories*")
 
 	//Create the base directory for the pim
 	err = ic.tools.MakeDir(pimDir + pim.BaseDir)
@@ -191,7 +192,8 @@ func (ic *InstallCommand) Run() error {
 	//Check and see if any files need to be copied from the container to one of the volumes on the host.
 	if len(version.Copies) > 0 {
 
-		fmt.Println("Copying necessary files 1/3")
+		ic.tools.RenderInfoMarkdown("- *Copying necessary files (create container)*")
+
 		//Create the container so that we can copy the files over to the right places
 		containerID, err := ic.tools.CreateContainer(version.Image, cli)
 
@@ -199,7 +201,8 @@ func (ic *InstallCommand) Run() error {
 			return err
 		}
 
-		fmt.Println("Copying necessary files 2/3")
+		ic.tools.RenderInfoMarkdown("- *Copying necessary files (copy files from container)*")
+
 		//Copy the files from the container to the locations
 		for _, copy := range version.Copies {
 			err = ic.tools.CopyFromContainer(copy.Source, pimDir+copy.Dest, containerID, cli, ic.cp)
@@ -209,7 +212,8 @@ func (ic *InstallCommand) Run() error {
 			}
 		}
 
-		fmt.Println("Copying necessary files 3/3")
+		ic.tools.RenderInfoMarkdown("- *Copying necessary files (remove container)*")
+
 		//Remove the Container
 		err = ic.tools.RemoveContainer(containerID, cli)
 
@@ -230,7 +234,7 @@ func (ic *InstallCommand) Run() error {
 
 	if ic.config.Alias {
 		//Set the alias for the command
-		fmt.Println("Setting Alias")
+		ic.tools.RenderInfoMarkdown("- *Setting alias*")
 
 		if runtime.GOOS == "windows" {
 			if version.Version != "latest" {
@@ -251,7 +255,8 @@ func (ic *InstallCommand) Run() error {
 		}
 	}
 
-	fmt.Println(pim.Name, "successfully installed")
+	ic.tools.RenderInfoMarkdown("***")
+	ic.tools.RenderInfoMarkdown(fmt.Sprintf("*%s* **successfully installed**", pim.Name))
 
 	return nil
 }

@@ -410,6 +410,16 @@ func (mu *MockUtility) Getwd() (dir string, err error) {
 	return os.Getwd()
 }
 
+//Mock of the RenderInfoMarkdown utility function
+func (mu *MockUtility) RenderInfoMarkdown(input string) {
+	mu.Calls = append(mu.Calls, "RenderInfoMarkdown")
+}
+
+//Mock of the RenderErrorMarkdown utility function
+func (mu *MockUtility) RenderErrorMarkdown(input string) {
+	mu.Calls = append(mu.Calls, "RenderErrorMarkdown")
+}
+
 //Create a Mock for the Docker client
 type DockMock struct {
 	//Variable to know what function to return an error from

@@ -46,7 +46,7 @@ func (ic *UpgradeCommand) Name() string {
 //Init - Parses and Populates values of the Upgrade subcommand
 func (ic *UpgradeCommand) Init(args []string) error {
 	if len(args) <= 0 {
-		fmt.Println("No pim specified, upgrading all currently installed pims.")
+		ic.tools.RenderInfoMarkdown("*No pim specified, upgrading all currently installed pims*")
 	} else {
 		ic.name = args[0]
 	}
@@ -140,15 +140,16 @@ func (ic *UpgradeCommand) Run() error {
 			return errors.New("pim: " + pim.Name + " with version '" + version.Version + "' is not installed. It must be installed before it can be upgraded.")
 		}
 
-		fmt.Println("Upgrading", pim.Name+":"+version.Version)
+		ic.tools.RenderInfoMarkdown(fmt.Sprintf("**Upgrading**: *%s*", pim.Name+":"+version.Version))
 		//Pull the image down from Docker Hub
+		ic.tools.RenderInfoMarkdown(fmt.Sprintf("- *Pulling image %s*", version.Image))
 		err = ic.tools.PullImage(version.Image, cli)
 
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("Updating pim directories")
+		ic.tools.RenderInfoMarkdown("- *Updating pim directories*")
 
 		//Check the volumes and create the directories for them if they don't already exist
 		for _, vol := range version.Volumes {
@@ -165,7 +166,7 @@ func (ic *UpgradeCommand) Run() error {
 		//Check and see if any files need to be copied from the container to one of the volumes on the host.
 		if len(version.Copies) > 0 {
 
-			fmt.Println("Copying necessary files 1/3")
+			ic.tools.RenderInfoMarkdown("- *Copying necessary files (create container)*")
 			//Create the container so that we can copy the files over to the right places
 			containerID, err := ic.tools.CreateContainer(version.Image, cli)
 
@@ -173,7 +174,7 @@ func (ic *UpgradeCommand) Run() error {
 				return err
 			}
 
-			fmt.Println("Copying necessary files 2/3")
+			ic.tools.RenderInfoMarkdown("- *Copying necessary files (copy files from container)*")
 			//Copy the files from the container to the locations
 			for _, copy := range version.Copies {
 				err = ic.tools.CopyFromContainer(copy.Source, pimDir+copy.Dest, containerID, cli, ic.cp)
@@ -183,7 +184,7 @@ func (ic *UpgradeCommand) Run() error {
 				}
 			}
 
-			fmt.Println("Copying necessary files 3/3")
+			ic.tools.RenderInfoMarkdown("- *Copying necessary files (remove container)*")
 			//Remove the Container
 			err = ic.tools.RemoveContainer(containerID, cli)
 
@@ -191,7 +192,8 @@ func (ic *UpgradeCommand) Run() error {
 				return err
 			}
 
-			fmt.Println(pim.Name, "successfully upgraded")
+			ic.tools.RenderInfoMarkdown("***")
+			ic.tools.RenderInfoMarkdown(fmt.Sprintf("*%s* **successfully upgraded**", pim.Name))
 
 		}
 	} else {
@@ -239,7 +241,8 @@ func (ic *UpgradeCommand) Run() error {
 						continue
 					}
 
-					fmt.Println("Upgrading", pim.Name+":"+ver.Version)
+					ic.tools.RenderInfoMarkdown(fmt.Sprintf("**Upgrading**: *%s* ", pim.Name+":"+ver.Version))
+					ic.tools.RenderInfoMarkdown(fmt.Sprintf("- *Pulling image %s*", version.Image))
 					//Pull the image down from Docker Hub
 					err = ic.tools.PullImage(ver.Image, cli)
 
@@ -247,7 +250,7 @@ func (ic *UpgradeCommand) Run() error {
 						return err
 					}
 
-					fmt.Println("Updating pim directories")
+					ic.tools.RenderInfoMarkdown("- *Updating pim directories*")
 
 					//Check the volumes and create the directories for them if they don't already exist
 					for _, vol := range ver.Volumes {
@@ -264,7 +267,7 @@ func (ic *UpgradeCommand) Run() error {
 					//Check and see if any files need to be copied from the container to one of the volumes on the host.
 					if len(ver.Copies) > 0 {
 
-						fmt.Println("Copying necessary files 1/3")
+						ic.tools.RenderInfoMarkdown("- *Copying necessary files (create container)*")
 						//Create the container so that we can copy the files over to the right places
 						containerID, err := ic.tools.CreateContainer(ver.Image, cli)
 
@@ -272,7 +275,7 @@ func (ic *UpgradeCommand) Run() error {
 							return err
 						}
 
-						fmt.Println("Copying necessary files 2/3")
+						ic.tools.RenderInfoMarkdown("- *Copying necessary files (copy files from container)*")
 						//Copy the files from the container to the locations
 						for _, copy := range ver.Copies {
 							err = ic.tools.CopyFromContainer(copy.Source, pimDir+copy.Dest, containerID, cli, ic.cp)
@@ -282,7 +285,7 @@ func (ic *UpgradeCommand) Run() error {
 							}
 						}
 
-						fmt.Println("Copying necessary files 3/3")
+						ic.tools.RenderInfoMarkdown("- *Copying necessary files (remove container)*")
 						//Remove the Container
 						err = ic.tools.RemoveContainer(containerID, cli)
 
@@ -290,7 +293,8 @@ func (ic *UpgradeCommand) Run() error {
 							return err
 						}
 
-						fmt.Println(pim.Name, "successfully upgraded")
+						ic.tools.RenderInfoMarkdown("***")
+						ic.tools.RenderInfoMarkdown(fmt.Sprintf("*%s* - **successfully upgraded**", pim.Name))
 					}
 
 				}
