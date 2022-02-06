@@ -24,13 +24,13 @@ jobs:
       
       # Run the go tests
       - name: Run tests with coverage
-        run: go test -short -race -covermode=atomic -coverprofile=./coverage/reports/coverage.out ./...
+        run: go test -short -race -covermode=atomic -coverprofile=coverage.out ./...
       
       # Upload to CodeCov
       - name: Upload coverage to CodeCov
         uses: codecov/codecov-action@v2
         with:
-          directory: ./coverage/reports/
+          files: ./coverage.out
           flags: unittests
           name: codecov-umbrella
           verbose: true
