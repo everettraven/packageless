@@ -144,10 +144,8 @@ func (u *Utility) RunContainer(image string, ports []string, volumes []string, c
 		var target string
 		var options string
 
-		// If the host is a windows machine we need to remove the 'C:' and add it again later
-		if runtime.GOOS == "windows" {
-			vol = strings.TrimLeft(vol, "c:")
-			source += "C:"
+		if strings.Contains(vol, "C:") {
+			vol = strings.TrimLeft(vol, "C:")
 		}
 
 		if vErr := u.validateRunContainerVolume(vol); vErr != nil {
@@ -157,12 +155,12 @@ func (u *Utility) RunContainer(image string, ports []string, volumes []string, c
 		splitVol := strings.Split(vol, ":")
 
 		if len(splitVol) == 3 {
-			source += splitVol[0]
-			target += splitVol[1]
-			options += ":" + splitVol[2]
+			source = splitVol[0]
+			target = splitVol[1]
+			options = ":" + splitVol[2]
 		} else {
-			source += splitVol[0]
-			target += splitVol[1]
+			source = splitVol[0]
+			target = splitVol[1]
 		}
 
 		source, err := filepath.Abs(source)
